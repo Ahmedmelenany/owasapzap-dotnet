@@ -70,7 +70,7 @@ jobs:
   parameters:
     reportTitle: ZAP Full Scan Report
     reportDescription: Active scan with OpenAPI coverage and authentication
-    reportDir: /zap/wrk/
+    reportDir: /zap/wrk/reports/
     reportFile: fullscan-zap.html
     template: traditional-html
 
@@ -78,6 +78,6 @@ jobs:
   parameters:
     reportTitle: ZAP Full Scan Report
     reportDescription: Active scan with OpenAPI coverage and authentication
-    reportDir: /zap/wrk/
+    reportDir: /zap/wrk/reports/
     reportFile: fullscan-zap.json
     template: traditional-json
