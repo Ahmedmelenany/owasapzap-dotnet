@@ -25,3 +25,23 @@ services:
         done
         echo "App is up, starting ZAP scan..."
         zap.sh -cmd -port 8090 -autorun /zap/wrk/zap.yaml
+
+  semgrep:
+    image: semgrep/semgrep:latest
+    container_name: semgrep-scan
+    profiles: [sast]
+    volumes:
+      - ./src:/src:ro
+      - ./reports:/reports:rw
+    working_dir: /src
+    command:
+      - semgrep
+      - scan
+      - --config=p/csharp
+      - --config=p/security-audit
+      - --config=p/owasp-top-ten
+      - --sarif
+      - --output=/reports/semgrep-report.sarif
+      - --json
+      - --json-output=/reports/semgrep-report.json
+      - --error
