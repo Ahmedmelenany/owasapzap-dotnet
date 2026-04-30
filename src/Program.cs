@@ -14,6 +14,8 @@ var app = builder.Build();
 app.MapOpenApi();
 
 app.UseCors();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 // VULN: Expose server version in every response
 app.Use(async (context, next) =>

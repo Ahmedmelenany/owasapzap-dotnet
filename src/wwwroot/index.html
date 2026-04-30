@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Todo Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { margin-bottom: 0.25rem; }
+    section { background: #f6f6f6; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }
+    input, button { padding: 0.5rem; font-size: 1rem; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid #ddd; }
+    li.done span { text-decoration: line-through; color: #888; }
+    .delete { color: crimson; cursor: pointer; background: none; border: none; font-size: 1.1rem; }
+    .row { display: flex; gap: 0.5rem; }
+    .row input { flex: 1; }
+    #search-result { background: #fff; padding: 0.5rem; border-radius: 4px; min-height: 1.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Todo Demo</h1>
+  <p>A vulnerable demo app for OWASP ZAP scanning.</p>
+
+  <section>
+    <h2>Todos</h2>
+    <div class="row">
+      <input id="new-title" placeholder="What needs doing?" />
+      <button id="add-btn">Add</button>
+    </div>
+    <ul id="todo-list"></ul>
+  </section>
+
+  <section>
+    <h2>Search</h2>
+    <div class="row">
+      <input id="search-q" placeholder="Search..." />
+      <button id="search-btn">Search</button>
+    </div>
+    <div id="search-result"></div>
+  </section>
+
+  <section>
+    <h2>Login</h2>
+    <div class="row">
+      <input id="username" placeholder="username" />
+      <input id="password" type="password" placeholder="password" />
+      <button id="login-btn">Log in</button>
+    </div>
+    <div id="login-result"></div>
+  </section>
+
+  <script>
+    const api = '';
+
+    async function loadTodos() {
+      const res = await fetch(api + '/todos');
+      const todos = await res.json();
+      const list = document.getElementById('todo-list');
+      list.innerHTML = '';
+      for (const t of todos) {
+        const li = document.createElement('li');
+        if (t.isComplete) li.classList.add('done');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = t.isComplete;
+        checkbox.onchange = () => toggleTodo(t);
+        const span = document.createElement('span');
+        span.textContent = t.title;
+        span.style.flex = '1';
+        const del = document.createElement('button');
+        del.className = 'delete';
+        del.textContent = 'X';
+        del.onclick = () => deleteTodo(t.id);
+        li.append(checkbox, span, del);
+        list.appendChild(li);
+      }
+    }
+
+    async function addTodo() {
+      const input = document.getElementById('new-title');
+      const title = input.value.trim();
+      if (!title) return;
+      await fetch(api + '/todos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, isComplete: false })
+      });
+      input.value = '';
+      loadTodos();
+    }
+
+    async function toggleTodo(t) {
+      await fetch(api + '/todos/' + t.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: t.title, isComplete: !t.isComplete })
+      });
+      loadTodos();
+    }
+
+    async function deleteTodo(id) {
+      await fetch(api + '/todos/' + id, { method: 'DELETE' });
+      loadTodos();
+    }
+
+    async function doSearch() {
+      const q = document.getElementById('search-q').value;
+      const res = await fetch(api + '/search?q=' + encodeURIComponent(q));
+      document.getElementById('search-result').innerHTML = await res.text();
+    }
+
+    async function doLogin() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const res = await fetch(api + '/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      document.getElementById('login-result').textContent =
+        res.ok ? 'Logged in' : 'Invalid credentials';
+    }
+
+    document.getElementById('add-btn').onclick = addTodo;
+    document.getElementById('search-btn').onclick = doSearch;
+    document.getElementById('login-btn').onclick = doLogin;
+    document.getElementById('new-title').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addTodo();
+    });
+
+    loadTodos();
+  </script>
+</body>
+</html>
