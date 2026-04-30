@@ -41,14 +41,17 @@ jobs:
 - type: spider
   parameters:
     context: todo-api
-    url: http://localhost:5132/todos
+    url: http://localhost:5132/
     maxDuration: 2
 
 - type: spiderAjax
   parameters:
     context: todo-api
-    url: http://localhost:5132/todos
-    maxDuration: 1
+    url: http://localhost:5132/
+    maxDuration: 3
+    browserId: firefox-headless
+    clickElemsOnce: false
+    runOnlyIfModern: false
 
 - type: passiveScan-wait
   parameters:
