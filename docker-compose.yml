@@ -6,14 +6,14 @@ services:
     ports:
       - "5132:5132"
 
-  zap:
+  zap-pr:
     image: ghcr.io/zaproxy/zaproxy:stable
-    container_name: zap-scan
+    container_name: zap-pr-scan
     depends_on:
       - app
     network_mode: "service:app"
     volumes:
-      - ./zap.yaml:/zap/wrk/zap.yaml:ro
+      - ./zap-pr.yaml:/zap/wrk/zap-pr.yaml:ro
       - ./reports:/zap/wrk/reports:rw
     entrypoint: /bin/bash
     command:
@@ -23,8 +23,29 @@ services:
         until curl -sf http://localhost:5132/todos > /dev/null; do
           sleep 2
         done
-        echo "App is up, starting ZAP scan..."
-        zap.sh -cmd -port 8090 -autorun /zap/wrk/zap.yaml
+        echo "App is up, starting ZAP PR scan (passive only)..."
+        zap.sh -cmd -port 8090 -autorun /zap/wrk/zap-pr.yaml
+
+  zap-nightly:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    container_name: zap-nightly-scan
+    profiles: [nightly]
+    depends_on:
+      - app
+    network_mode: "service:app"
+    volumes:
+      - ./zap-nightly.yaml:/zap/wrk/zap-nightly.yaml:ro
+      - ./reports:/zap/wrk/reports:rw
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        echo "Waiting for app to be ready..."
+        until curl -sf http://localhost:5132/todos > /dev/null; do
+          sleep 2
+        done
+        echo "App is up, starting ZAP nightly scan (active + AJAX)..."
+        zap.sh -cmd -port 8090 -autorun /zap/wrk/zap-nightly.yaml
 
   semgrep:
     image: semgrep/semgrep:latest

@@ -20,19 +20,20 @@ This repo demonstrates how to integrate security scanning into a CI/CD pipeline 
 
 ## Quick Start (Docker Compose)
 
-The whole stack — app + ZAP — runs with a single command:
+There are three scan profiles you can run via compose:
 
 ```bash
+# Fast PR scan — passive only, ~2 min. Default profile.
 docker compose up --abort-on-container-exit
-```
 
-This builds the .NET app image, starts it, waits for it to be ready, then runs the ZAP automation plan against it. Reports land in `./reports/`.
+# Deep nightly scan — active scan + AJAX spider, ~15-20 min
+docker compose --profile nightly up --abort-on-container-exit
 
-To also run the SAST scan:
-
-```bash
+# SAST (Semgrep)
 docker compose --profile sast run --rm semgrep
 ```
+
+All scans build the .NET app image, start it, wait for readiness, then run the corresponding scan. Reports land in `./reports/`.
 
 ## Manual Usage
 
@@ -43,12 +44,14 @@ cd src && dotnet run --launch-profile http
 # Visit the frontend
 open http://localhost:5132/
 
-# Run OWASP ZAP full scan against the app
+# Run OWASP ZAP scan against the app — pick a profile
 docker run --rm \
   --network host \
   -v $(pwd):/zap/wrk/:rw \
   ghcr.io/zaproxy/zaproxy:stable \
-  zap.sh -cmd -port 8090 -autorun /zap/wrk/zap.yaml
+  zap.sh -cmd -port 8090 -autorun /zap/wrk/zap-pr.yaml          # PR (passive)
+# or
+  zap.sh -cmd -port 8090 -autorun /zap/wrk/zap-nightly.yaml     # Nightly (active)
 ```
 
 ## Project Layout
@@ -60,8 +63,10 @@ docker run --rm \
 │   ├── wwwroot/index.html     # Static frontend
 │   ├── Dockerfile             # Multi-stage build, runs as non-root appuser
 │   └── .dockerignore
-├── zap.yaml                   # ZAP Automation Framework plan (OpenAPI + auth + active scan)
-├── docker-compose.yml         # app + zap + semgrep services
+├── zap-pr.yaml                # ZAP plan: fast passive scan for PRs
+├── zap-nightly.yaml           # ZAP plan: deep active scan with AJAX spider + multi-user auth
+├── zap.yaml                   # Legacy single-profile plan (kept as fallback)
+├── docker-compose.yml         # app + zap-pr + zap-nightly + semgrep services
 ├── Jenkinsfile                # Pipeline: build → start app → ZAP scan → publish report
 ├── reports/                   # Scan output (HTML / JSON / SARIF)
 └── README.md
@@ -82,7 +87,8 @@ Base URL: `http://localhost:5132`
 | `DELETE` | `/todos/{id}` | Deletes a todo by ID |
 | `GET` | `/search?q=...` | Reflects user input as HTML (vuln: reflected XSS) |
 | `GET` | `/debug/error` | Returns full exception detail (vuln: information disclosure) |
-| `POST` | `/login` | Accepts admin/admin, sets insecure cookie (vuln: insecure session cookie) |
+| `POST` | `/login` | Accepts `admin/admin` or `user/user`, sets insecure cookie (vuln: insecure session cookie) |
+| `GET` | `/me` | Returns auth status — used by ZAP as a session-verification poll URL |
 | `GET` | `/export?token=...` | Exports todos with token in URL (vuln: sensitive data in URL) |
 
 #### Request Body (POST / PUT `/todos`)
@@ -107,12 +113,21 @@ The app deliberately ships with these issues so the scans have something to find
 
 ## ZAP Scan Configuration
 
-`zap.yaml` is a [ZAP Automation Framework](https://www.zaproxy.org/docs/automate/automation-framework/) plan that:
+The project ships two [ZAP Automation Framework](https://www.zaproxy.org/docs/automate/automation-framework/) plans:
 
-1. Imports the OpenAPI spec — so every endpoint is discovered, not just what the spider crawls.
-2. Authenticates as `admin/admin` via `/login` and uses the resulting cookie for protected scans.
-3. Runs both passive and active scans.
-4. Writes HTML and JSON reports to `/zap/wrk/reports/` (mapped to `./reports/`).
+| Plan | Purpose | Includes | Typical runtime |
+|---|---|---|---|
+| `zap-pr.yaml` | Fast feedback on every PR | OpenAPI import + spider + passive scan | ~2 min |
+| `zap-nightly.yaml` | Deep scheduled scan | OpenAPI import + spider + AJAX spider + active scan + multi-user auth | ~15-20 min |
+
+Both plans share the same authentication setup:
+
+1. **JSON login** — POSTs to `/login` with username/password placeholders so the same plan reuses across users.
+2. **Poll-based session verification** — ZAP hits `/me` periodically and re-logs in if the session expired.
+3. **Cookie-based session management**.
+4. **Forced user mode** — every spider/scan request goes out authenticated (admin in PR, admin + user in nightly).
+
+Reports are written to `/zap/wrk/reports/` inside the container (mapped to `./reports/` on the host) in HTML, JSON, and (nightly only) SARIF formats.
 
 ## CI/CD
 
