@@ -1,0 +1,105 @@
+env:
+  contexts:
+  - name: todo-api
+    urls:
+    - http://localhost:5132
+    includePaths:
+    - http://localhost:5132/.*
+    excludePaths: []
+    authentication:
+      method: json
+      parameters:
+        loginPageUrl: http://localhost:5132/login
+        loginRequestBody: '{"username":"{%username%}","password":"{%password%}"}'
+      verification:
+        method: poll
+        loggedInRegex: '"authenticated":\s*true'
+        loggedOutRegex: "Unauthorized"
+        pollFrequency: 60
+        pollUnits: requests
+        pollUrl: http://localhost:5132/me
+        pollPostData: ""
+    sessionManagement:
+      method: cookie
+      parameters: {}
+    users:
+    - name: admin
+      credentials:
+        username: admin
+        password: admin
+    - name: user
+      credentials:
+        username: user
+        password: user
+  parameters:
+    failOnError: true
+    progressToStdout: true
+
+jobs:
+- type: passiveScan-config
+  parameters:
+    enableTags: false
+    maxAlertsPerRule: 10
+
+- type: openapi
+  parameters:
+    apiUrl: http://localhost:5132/openapi/v1.json
+    targetUrl: http://localhost:5132
+
+- type: spider
+  parameters:
+    context: todo-api
+    user: admin
+    url: http://localhost:5132/
+    maxDuration: 5
+
+- type: spiderAjax
+  parameters:
+    context: todo-api
+    user: admin
+    url: http://localhost:5132/
+    maxDuration: 5
+    browserId: firefox-headless
+    clickElemsOnce: false
+    runOnlyIfModern: false
+
+- type: passiveScan-wait
+  parameters:
+    maxDuration: 2
+
+- type: activeScan
+  parameters:
+    context: todo-api
+    user: admin
+    maxRuleDurationInMins: 0
+    maxScanDurationInMins: 20
+
+- type: outputSummary
+  parameters:
+    format: Long
+    summaryFile: /home/zap/zap_out.json
+  rules: []
+
+- type: report
+  parameters:
+    reportTitle: ZAP Nightly Scan Report
+    reportDescription: Deep active scan with OpenAPI coverage and authentication
+    reportDir: /zap/wrk/reports/
+    reportFile: nightly-zap.html
+    template: traditional-html
+
+- type: report
+  parameters:
+    reportTitle: ZAP Nightly Scan Report
+    reportDescription: Deep active scan with OpenAPI coverage and authentication
+    reportDir: /zap/wrk/reports/
+    reportFile: nightly-zap.json
+    template: traditional-json
+
+- type: report
+  parameters:
+    reportTitle: ZAP Nightly Scan Report
+    reportDescription: Deep active scan with OpenAPI coverage and authentication
+    reportDir: /zap/wrk/reports/
+    reportFile: nightly-zap.sarif
+    template: sarif-json
