@@ -10,11 +10,15 @@ env:
       method: json
       parameters:
         loginPageUrl: http://localhost:5132/login
-        loginRequestBody: '{"username":"admin","password":"admin"}'
+        loginRequestBody: '{"username":"{%username%}","password":"{%password%}"}'
       verification:
-        method: response
-        loggedInRegex: "Login successful"
+        method: poll
+        loggedInRegex: '"authenticated":\s*true'
         loggedOutRegex: "Unauthorized"
+        pollFrequency: 60
+        pollUnits: requests
+        pollUrl: http://localhost:5132/me
+        pollPostData: ""
     sessionManagement:
       method: cookie
       parameters: {}
@@ -23,6 +27,10 @@ env:
       credentials:
         username: admin
         password: admin
+    - name: user
+      credentials:
+        username: user
+        password: user
   parameters:
     failOnError: true
     progressToStdout: true
@@ -41,12 +49,14 @@ jobs:
 - type: spider
   parameters:
     context: todo-api
+    user: admin
     url: http://localhost:5132/
     maxDuration: 2
 
 - type: spiderAjax
   parameters:
     context: todo-api
+    user: admin
     url: http://localhost:5132/
     maxDuration: 3
     browserId: firefox-headless
@@ -60,6 +70,7 @@ jobs:
 - type: activeScan
   parameters:
     context: todo-api
+    user: admin
     maxRuleDurationInMins: 0
     maxScanDurationInMins: 5
 

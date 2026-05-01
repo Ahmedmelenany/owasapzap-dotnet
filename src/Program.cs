@@ -95,19 +95,34 @@ app.MapGet("/debug/error", () =>
 });
 
 // VULN: Insecure cookie — no HttpOnly, no Secure, no SameSite
+var users = new Dictionary<string, string>
+{
+    ["admin"] = "admin",
+    ["user"] = "user"
+};
+
 app.MapPost("/login", (HttpContext context, LoginInput input) =>
 {
-    if (input.Username == "admin" && input.Password == "admin")
+    if (input.Username is not null && users.TryGetValue(input.Username, out var pw) && pw == input.Password)
     {
-        context.Response.Cookies.Append("session", "eyJhbGciOiJub25lIn0.eyJ1c2VyIjoiYWRtaW4ifQ.", new CookieOptions
+        var token = $"eyJhbGciOiJub25lIn0.{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{{\"user\":\"{input.Username}\"}}"))}.";
+        context.Response.Cookies.Append("session", token, new CookieOptions
         {
             HttpOnly = false,
             Secure = false,
             SameSite = SameSiteMode.None
         });
-        return Results.Ok(new { message = "Login successful" });
+        return Results.Ok(new { message = "Login successful", user = input.Username });
     }
     return Results.Unauthorized();
+});
+
+// Endpoint ZAP can poll to verify session is still valid
+app.MapGet("/me", (HttpContext context) =>
+{
+    if (!context.Request.Cookies.ContainsKey("session"))
+        return Results.Unauthorized();
+    return Results.Ok(new { authenticated = true });
 });
 
 // VULN: Sensitive data exposed in URL (token as query param)
