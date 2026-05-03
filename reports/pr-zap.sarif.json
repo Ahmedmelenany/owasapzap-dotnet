@@ -1,0 +1,2380 @@
+{
+   "runs": [
+      {
+         "results": [ 
+            {
+               "level": "warning",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": ""
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The response does not protect against 'ClickJacking' attacks. It should include either Content-Security-Policy with 'frame-ancestors' directive or X-Frame-Options."
+               },
+               "ruleId": "10020",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132",
+                   "method": "GET",
+                   "headers": {
+                       "cache-control" : "no-cache",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Accept-Ranges" : "bytes",
+                       "Content-Length" : "4465",
+                       "Content-Type" : "text\/html",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "ETag" : "\"1dcd8d776faeb71\"",
+                       "Last-Modified" : "Thu, 30 Apr 2026 19:28:04 GMT",
+                       "Server" : "Kestrel"
+                   },
+                   "body": {
+                       "text": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" \/>\n  <title>Todo Demo<\/title>\n  <style>\n    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }\n    h1 { margin-bottom: 0.25rem; }\n    section { background: #f6f6f6; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }\n    input, button { padding: 0.5rem; font-size: 1rem; }\n    ul { list-style: none; padding: 0; }\n    li { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid #ddd; }\n    li.done span { text-decoration: line-through; color: #888; }\n    .delete { color: crimson; cursor: pointer; background: none; border: none; font-size: 1.1rem; }\n    .row { display: flex; gap: 0.5rem; }\n    .row input { flex: 1; }\n    #search-result { background: #fff; padding: 0.5rem; border-radius: 4px; min-height: 1.5rem; }\n  <\/style>\n<\/head>\n<body>\n  <h1>Todo Demo<\/h1>\n  <p>A vulnerable demo app for OWASP ZAP scanning.<\/p>\n\n  <section>\n    <h2>Todos<\/h2>\n    <div class=\"row\">\n      <input id=\"new-title\" placeholder=\"What needs doing?\" \/>\n      <button id=\"add-btn\">Add<\/button>\n    <\/div>\n    <ul id=\"todo-list\"><\/ul>\n  <\/section>\n\n  <section>\n    <h2>Search<\/h2>\n    <div class=\"row\">\n      <input id=\"search-q\" placeholder=\"Search...\" \/>\n      <button id=\"search-btn\">Search<\/button>\n    <\/div>\n    <div id=\"search-result\"><\/div>\n  <\/section>\n\n  <section>\n    <h2>Login<\/h2>\n    <div class=\"row\">\n      <input id=\"username\" placeholder=\"username\" \/>\n      <input id=\"password\" type=\"password\" placeholder=\"password\" \/>\n      <button id=\"login-btn\">Log in<\/button>\n    <\/div>\n    <div id=\"login-result\"><\/div>\n  <\/section>\n\n  <script>\n    const api = '';\n\n    async function loadTodos() {\n      const res = await fetch(api + '\/todos');\n      const todos = await res.json();\n      const list = document.getElementById('todo-list');\n      list.innerHTML = '';\n      for (const t of todos) {\n        const li = document.createElement('li');\n        if (t.isComplete) li.classList.add('done');\n        const checkbox = document.createElement('input');\n        checkbox.type = 'checkbox';\n        checkbox.checked = t.isComplete;\n        checkbox.onchange = () => toggleTodo(t);\n        const span = document.createElement('span');\n        span.textContent = t.title;\n        span.style.flex = '1';\n        const del = document.createElement('button');\n        del.className = 'delete';\n        del.textContent = 'X';\n        del.onclick = () => deleteTodo(t.id);\n        li.append(checkbox, span, del);\n        list.appendChild(li);\n      }\n    }\n\n    async function addTodo() {\n      const input = document.getElementById('new-title');\n      const title = input.value.trim();\n      if (!title) return;\n      await fetch(api + '\/todos', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title, isComplete: false })\n      });\n      input.value = '';\n      loadTodos();\n    }\n\n    async function toggleTodo(t) {\n      await fetch(api + '\/todos\/' + t.id, {\n        method: 'PUT',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title: t.title, isComplete: !t.isComplete })\n      });\n      loadTodos();\n    }\n\n    async function deleteTodo(id) {\n      await fetch(api + '\/todos\/' + id, { method: 'DELETE' });\n      loadTodos();\n    }\n\n    async function doSearch() {\n      const q = document.getElementById('search-q').value;\n      const res = await fetch(api + '\/search?q=' + encodeURIComponent(q));\n      document.getElementById('search-result').innerHTML = await res.text();\n    }\n\n    async function doLogin() {\n      const username = document.getElementById('username').value;\n      const password = document.getElementById('password').value;\n      const res = await fetch(api + '\/login', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ username, password })\n      });\n      document.getElementById('login-result').textContent =\n        res.ok ? 'Logged in' : 'Invalid credentials';\n    }\n\n    document.getElementById('add-btn').onclick = addTodo;\n    document.getElementById('search-btn').onclick = doSearch;\n    document.getElementById('login-btn').onclick = doLogin;\n    document.getElementById('new-title').addEventListener('keydown', e => {\n      if (e.key === 'Enter') addTodo();\n    });\n\n    loadTodos();\n  <\/script>\n<\/body>\n<\/html>\n"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "warning",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": ""
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The response does not protect against 'ClickJacking' attacks. It should include either Content-Security-Policy with 'frame-ancestors' directive or X-Frame-Options."
+               },
+               "ruleId": "10020",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/",
+                   "method": "GET",
+                   "headers": {
+                       "cache-control" : "no-cache",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : ""
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Accept-Ranges" : "bytes",
+                       "Content-Length" : "4465",
+                       "Content-Type" : "text\/html",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "ETag" : "\"1dcd8d776faeb71\"",
+                       "Last-Modified" : "Thu, 30 Apr 2026 19:28:04 GMT",
+                       "Server" : "Kestrel"
+                   },
+                   "body": {
+                       "text": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" \/>\n  <title>Todo Demo<\/title>\n  <style>\n    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }\n    h1 { margin-bottom: 0.25rem; }\n    section { background: #f6f6f6; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }\n    input, button { padding: 0.5rem; font-size: 1rem; }\n    ul { list-style: none; padding: 0; }\n    li { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid #ddd; }\n    li.done span { text-decoration: line-through; color: #888; }\n    .delete { color: crimson; cursor: pointer; background: none; border: none; font-size: 1.1rem; }\n    .row { display: flex; gap: 0.5rem; }\n    .row input { flex: 1; }\n    #search-result { background: #fff; padding: 0.5rem; border-radius: 4px; min-height: 1.5rem; }\n  <\/style>\n<\/head>\n<body>\n  <h1>Todo Demo<\/h1>\n  <p>A vulnerable demo app for OWASP ZAP scanning.<\/p>\n\n  <section>\n    <h2>Todos<\/h2>\n    <div class=\"row\">\n      <input id=\"new-title\" placeholder=\"What needs doing?\" \/>\n      <button id=\"add-btn\">Add<\/button>\n    <\/div>\n    <ul id=\"todo-list\"><\/ul>\n  <\/section>\n\n  <section>\n    <h2>Search<\/h2>\n    <div class=\"row\">\n      <input id=\"search-q\" placeholder=\"Search...\" \/>\n      <button id=\"search-btn\">Search<\/button>\n    <\/div>\n    <div id=\"search-result\"><\/div>\n  <\/section>\n\n  <section>\n    <h2>Login<\/h2>\n    <div class=\"row\">\n      <input id=\"username\" placeholder=\"username\" \/>\n      <input id=\"password\" type=\"password\" placeholder=\"password\" \/>\n      <button id=\"login-btn\">Log in<\/button>\n    <\/div>\n    <div id=\"login-result\"><\/div>\n  <\/section>\n\n  <script>\n    const api = '';\n\n    async function loadTodos() {\n      const res = await fetch(api + '\/todos');\n      const todos = await res.json();\n      const list = document.getElementById('todo-list');\n      list.innerHTML = '';\n      for (const t of todos) {\n        const li = document.createElement('li');\n        if (t.isComplete) li.classList.add('done');\n        const checkbox = document.createElement('input');\n        checkbox.type = 'checkbox';\n        checkbox.checked = t.isComplete;\n        checkbox.onchange = () => toggleTodo(t);\n        const span = document.createElement('span');\n        span.textContent = t.title;\n        span.style.flex = '1';\n        const del = document.createElement('button');\n        del.className = 'delete';\n        del.textContent = 'X';\n        del.onclick = () => deleteTodo(t.id);\n        li.append(checkbox, span, del);\n        list.appendChild(li);\n      }\n    }\n\n    async function addTodo() {\n      const input = document.getElementById('new-title');\n      const title = input.value.trim();\n      if (!title) return;\n      await fetch(api + '\/todos', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title, isComplete: false })\n      });\n      input.value = '';\n      loadTodos();\n    }\n\n    async function toggleTodo(t) {\n      await fetch(api + '\/todos\/' + t.id, {\n        method: 'PUT',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title: t.title, isComplete: !t.isComplete })\n      });\n      loadTodos();\n    }\n\n    async function deleteTodo(id) {\n      await fetch(api + '\/todos\/' + id, { method: 'DELETE' });\n      loadTodos();\n    }\n\n    async function doSearch() {\n      const q = document.getElementById('search-q').value;\n      const res = await fetch(api + '\/search?q=' + encodeURIComponent(q));\n      document.getElementById('search-result').innerHTML = await res.text();\n    }\n\n    async function doLogin() {\n      const username = document.getElementById('username').value;\n      const password = document.getElementById('password').value;\n      const res = await fetch(api + '\/login', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ username, password })\n      });\n      document.getElementById('login-result').textContent =\n        res.ok ? 'Logged in' : 'Invalid credentials';\n    }\n\n    document.getElementById('add-btn').onclick = addTodo;\n    document.getElementById('search-btn').onclick = doSearch;\n    document.getElementById('login-btn').onclick = doLogin;\n    document.getElementById('new-title').addEventListener('keydown', e => {\n      if (e.key === 'Enter') addTodo();\n    });\n\n    loadTodos();\n  <\/script>\n<\/body>\n<\/html>\n"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "warning",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/search?q=q"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": ""
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The response does not protect against 'ClickJacking' attacks. It should include either Content-Security-Policy with 'frame-ancestors' directive or X-Frame-Options."
+               },
+               "ruleId": "10020",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/search?q=q",
+                   "method": "GET",
+                   "headers": {
+                       "cache-control" : "no-cache",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : ""
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "75",
+                       "Content-Type" : "text\/html",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       "text": "<html><body><h1>Search Results<\/h1><p>You searched for: q<\/p><\/body><\/html>"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "warning",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": ""
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files."
+               },
+               "ruleId": "10038",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132",
+                   "method": "GET",
+                   "headers": {
+                       "cache-control" : "no-cache",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Accept-Ranges" : "bytes",
+                       "Content-Length" : "4465",
+                       "Content-Type" : "text\/html",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "ETag" : "\"1dcd8d776faeb71\"",
+                       "Last-Modified" : "Thu, 30 Apr 2026 19:28:04 GMT",
+                       "Server" : "Kestrel"
+                   },
+                   "body": {
+                       "text": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" \/>\n  <title>Todo Demo<\/title>\n  <style>\n    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }\n    h1 { margin-bottom: 0.25rem; }\n    section { background: #f6f6f6; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }\n    input, button { padding: 0.5rem; font-size: 1rem; }\n    ul { list-style: none; padding: 0; }\n    li { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid #ddd; }\n    li.done span { text-decoration: line-through; color: #888; }\n    .delete { color: crimson; cursor: pointer; background: none; border: none; font-size: 1.1rem; }\n    .row { display: flex; gap: 0.5rem; }\n    .row input { flex: 1; }\n    #search-result { background: #fff; padding: 0.5rem; border-radius: 4px; min-height: 1.5rem; }\n  <\/style>\n<\/head>\n<body>\n  <h1>Todo Demo<\/h1>\n  <p>A vulnerable demo app for OWASP ZAP scanning.<\/p>\n\n  <section>\n    <h2>Todos<\/h2>\n    <div class=\"row\">\n      <input id=\"new-title\" placeholder=\"What needs doing?\" \/>\n      <button id=\"add-btn\">Add<\/button>\n    <\/div>\n    <ul id=\"todo-list\"><\/ul>\n  <\/section>\n\n  <section>\n    <h2>Search<\/h2>\n    <div class=\"row\">\n      <input id=\"search-q\" placeholder=\"Search...\" \/>\n      <button id=\"search-btn\">Search<\/button>\n    <\/div>\n    <div id=\"search-result\"><\/div>\n  <\/section>\n\n  <section>\n    <h2>Login<\/h2>\n    <div class=\"row\">\n      <input id=\"username\" placeholder=\"username\" \/>\n      <input id=\"password\" type=\"password\" placeholder=\"password\" \/>\n      <button id=\"login-btn\">Log in<\/button>\n    <\/div>\n    <div id=\"login-result\"><\/div>\n  <\/section>\n\n  <script>\n    const api = '';\n\n    async function loadTodos() {\n      const res = await fetch(api + '\/todos');\n      const todos = await res.json();\n      const list = document.getElementById('todo-list');\n      list.innerHTML = '';\n      for (const t of todos) {\n        const li = document.createElement('li');\n        if (t.isComplete) li.classList.add('done');\n        const checkbox = document.createElement('input');\n        checkbox.type = 'checkbox';\n        checkbox.checked = t.isComplete;\n        checkbox.onchange = () => toggleTodo(t);\n        const span = document.createElement('span');\n        span.textContent = t.title;\n        span.style.flex = '1';\n        const del = document.createElement('button');\n        del.className = 'delete';\n        del.textContent = 'X';\n        del.onclick = () => deleteTodo(t.id);\n        li.append(checkbox, span, del);\n        list.appendChild(li);\n      }\n    }\n\n    async function addTodo() {\n      const input = document.getElementById('new-title');\n      const title = input.value.trim();\n      if (!title) return;\n      await fetch(api + '\/todos', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title, isComplete: false })\n      });\n      input.value = '';\n      loadTodos();\n    }\n\n    async function toggleTodo(t) {\n      await fetch(api + '\/todos\/' + t.id, {\n        method: 'PUT',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title: t.title, isComplete: !t.isComplete })\n      });\n      loadTodos();\n    }\n\n    async function deleteTodo(id) {\n      await fetch(api + '\/todos\/' + id, { method: 'DELETE' });\n      loadTodos();\n    }\n\n    async function doSearch() {\n      const q = document.getElementById('search-q').value;\n      const res = await fetch(api + '\/search?q=' + encodeURIComponent(q));\n      document.getElementById('search-result').innerHTML = await res.text();\n    }\n\n    async function doLogin() {\n      const username = document.getElementById('username').value;\n      const password = document.getElementById('password').value;\n      const res = await fetch(api + '\/login', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ username, password })\n      });\n      document.getElementById('login-result').textContent =\n        res.ok ? 'Logged in' : 'Invalid credentials';\n    }\n\n    document.getElementById('add-btn').onclick = addTodo;\n    document.getElementById('search-btn').onclick = doSearch;\n    document.getElementById('login-btn').onclick = doLogin;\n    document.getElementById('new-title').addEventListener('keydown', e => {\n      if (e.key === 'Enter') addTodo();\n    });\n\n    loadTodos();\n  <\/script>\n<\/body>\n<\/html>\n"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "warning",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": ""
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files."
+               },
+               "ruleId": "10038",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/",
+                   "method": "GET",
+                   "headers": {
+                       "cache-control" : "no-cache",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : ""
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Accept-Ranges" : "bytes",
+                       "Content-Length" : "4465",
+                       "Content-Type" : "text\/html",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "ETag" : "\"1dcd8d776faeb71\"",
+                       "Last-Modified" : "Thu, 30 Apr 2026 19:28:04 GMT",
+                       "Server" : "Kestrel"
+                   },
+                   "body": {
+                       "text": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" \/>\n  <title>Todo Demo<\/title>\n  <style>\n    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }\n    h1 { margin-bottom: 0.25rem; }\n    section { background: #f6f6f6; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }\n    input, button { padding: 0.5rem; font-size: 1rem; }\n    ul { list-style: none; padding: 0; }\n    li { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid #ddd; }\n    li.done span { text-decoration: line-through; color: #888; }\n    .delete { color: crimson; cursor: pointer; background: none; border: none; font-size: 1.1rem; }\n    .row { display: flex; gap: 0.5rem; }\n    .row input { flex: 1; }\n    #search-result { background: #fff; padding: 0.5rem; border-radius: 4px; min-height: 1.5rem; }\n  <\/style>\n<\/head>\n<body>\n  <h1>Todo Demo<\/h1>\n  <p>A vulnerable demo app for OWASP ZAP scanning.<\/p>\n\n  <section>\n    <h2>Todos<\/h2>\n    <div class=\"row\">\n      <input id=\"new-title\" placeholder=\"What needs doing?\" \/>\n      <button id=\"add-btn\">Add<\/button>\n    <\/div>\n    <ul id=\"todo-list\"><\/ul>\n  <\/section>\n\n  <section>\n    <h2>Search<\/h2>\n    <div class=\"row\">\n      <input id=\"search-q\" placeholder=\"Search...\" \/>\n      <button id=\"search-btn\">Search<\/button>\n    <\/div>\n    <div id=\"search-result\"><\/div>\n  <\/section>\n\n  <section>\n    <h2>Login<\/h2>\n    <div class=\"row\">\n      <input id=\"username\" placeholder=\"username\" \/>\n      <input id=\"password\" type=\"password\" placeholder=\"password\" \/>\n      <button id=\"login-btn\">Log in<\/button>\n    <\/div>\n    <div id=\"login-result\"><\/div>\n  <\/section>\n\n  <script>\n    const api = '';\n\n    async function loadTodos() {\n      const res = await fetch(api + '\/todos');\n      const todos = await res.json();\n      const list = document.getElementById('todo-list');\n      list.innerHTML = '';\n      for (const t of todos) {\n        const li = document.createElement('li');\n        if (t.isComplete) li.classList.add('done');\n        const checkbox = document.createElement('input');\n        checkbox.type = 'checkbox';\n        checkbox.checked = t.isComplete;\n        checkbox.onchange = () => toggleTodo(t);\n        const span = document.createElement('span');\n        span.textContent = t.title;\n        span.style.flex = '1';\n        const del = document.createElement('button');\n        del.className = 'delete';\n        del.textContent = 'X';\n        del.onclick = () => deleteTodo(t.id);\n        li.append(checkbox, span, del);\n        list.appendChild(li);\n      }\n    }\n\n    async function addTodo() {\n      const input = document.getElementById('new-title');\n      const title = input.value.trim();\n      if (!title) return;\n      await fetch(api + '\/todos', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title, isComplete: false })\n      });\n      input.value = '';\n      loadTodos();\n    }\n\n    async function toggleTodo(t) {\n      await fetch(api + '\/todos\/' + t.id, {\n        method: 'PUT',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title: t.title, isComplete: !t.isComplete })\n      });\n      loadTodos();\n    }\n\n    async function deleteTodo(id) {\n      await fetch(api + '\/todos\/' + id, { method: 'DELETE' });\n      loadTodos();\n    }\n\n    async function doSearch() {\n      const q = document.getElementById('search-q').value;\n      const res = await fetch(api + '\/search?q=' + encodeURIComponent(q));\n      document.getElementById('search-result').innerHTML = await res.text();\n    }\n\n    async function doLogin() {\n      const username = document.getElementById('username').value;\n      const password = document.getElementById('password').value;\n      const res = await fetch(api + '\/login', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ username, password })\n      });\n      document.getElementById('login-result').textContent =\n        res.ok ? 'Logged in' : 'Invalid credentials';\n    }\n\n    document.getElementById('add-btn').onclick = addTodo;\n    document.getElementById('search-btn').onclick = doSearch;\n    document.getElementById('login-btn').onclick = doLogin;\n    document.getElementById('new-title').addEventListener('keydown', e => {\n      if (e.key === 'Enter') addTodo();\n    });\n\n    loadTodos();\n  <\/script>\n<\/body>\n<\/html>\n"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "warning",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/search?q=q"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": ""
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files."
+               },
+               "ruleId": "10038",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/search?q=q",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "75",
+                       "Content-Type" : "text\/html",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       "text": "<html><body><h1>Search Results<\/h1><p>You searched for: q<\/p><\/body><\/html>"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": ""
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+               },
+               "ruleId": "10021",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/",
+                   "method": "GET",
+                   "headers": {
+                       "cache-control" : "no-cache",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : ""
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Accept-Ranges" : "bytes",
+                       "Content-Length" : "4465",
+                       "Content-Type" : "text\/html",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "ETag" : "\"1dcd8d776faeb71\"",
+                       "Last-Modified" : "Thu, 30 Apr 2026 19:28:04 GMT",
+                       "Server" : "Kestrel"
+                   },
+                   "body": {
+                       "text": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" \/>\n  <title>Todo Demo<\/title>\n  <style>\n    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }\n    h1 { margin-bottom: 0.25rem; }\n    section { background: #f6f6f6; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }\n    input, button { padding: 0.5rem; font-size: 1rem; }\n    ul { list-style: none; padding: 0; }\n    li { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid #ddd; }\n    li.done span { text-decoration: line-through; color: #888; }\n    .delete { color: crimson; cursor: pointer; background: none; border: none; font-size: 1.1rem; }\n    .row { display: flex; gap: 0.5rem; }\n    .row input { flex: 1; }\n    #search-result { background: #fff; padding: 0.5rem; border-radius: 4px; min-height: 1.5rem; }\n  <\/style>\n<\/head>\n<body>\n  <h1>Todo Demo<\/h1>\n  <p>A vulnerable demo app for OWASP ZAP scanning.<\/p>\n\n  <section>\n    <h2>Todos<\/h2>\n    <div class=\"row\">\n      <input id=\"new-title\" placeholder=\"What needs doing?\" \/>\n      <button id=\"add-btn\">Add<\/button>\n    <\/div>\n    <ul id=\"todo-list\"><\/ul>\n  <\/section>\n\n  <section>\n    <h2>Search<\/h2>\n    <div class=\"row\">\n      <input id=\"search-q\" placeholder=\"Search...\" \/>\n      <button id=\"search-btn\">Search<\/button>\n    <\/div>\n    <div id=\"search-result\"><\/div>\n  <\/section>\n\n  <section>\n    <h2>Login<\/h2>\n    <div class=\"row\">\n      <input id=\"username\" placeholder=\"username\" \/>\n      <input id=\"password\" type=\"password\" placeholder=\"password\" \/>\n      <button id=\"login-btn\">Log in<\/button>\n    <\/div>\n    <div id=\"login-result\"><\/div>\n  <\/section>\n\n  <script>\n    const api = '';\n\n    async function loadTodos() {\n      const res = await fetch(api + '\/todos');\n      const todos = await res.json();\n      const list = document.getElementById('todo-list');\n      list.innerHTML = '';\n      for (const t of todos) {\n        const li = document.createElement('li');\n        if (t.isComplete) li.classList.add('done');\n        const checkbox = document.createElement('input');\n        checkbox.type = 'checkbox';\n        checkbox.checked = t.isComplete;\n        checkbox.onchange = () => toggleTodo(t);\n        const span = document.createElement('span');\n        span.textContent = t.title;\n        span.style.flex = '1';\n        const del = document.createElement('button');\n        del.className = 'delete';\n        del.textContent = 'X';\n        del.onclick = () => deleteTodo(t.id);\n        li.append(checkbox, span, del);\n        list.appendChild(li);\n      }\n    }\n\n    async function addTodo() {\n      const input = document.getElementById('new-title');\n      const title = input.value.trim();\n      if (!title) return;\n      await fetch(api + '\/todos', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title, isComplete: false })\n      });\n      input.value = '';\n      loadTodos();\n    }\n\n    async function toggleTodo(t) {\n      await fetch(api + '\/todos\/' + t.id, {\n        method: 'PUT',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title: t.title, isComplete: !t.isComplete })\n      });\n      loadTodos();\n    }\n\n    async function deleteTodo(id) {\n      await fetch(api + '\/todos\/' + id, { method: 'DELETE' });\n      loadTodos();\n    }\n\n    async function doSearch() {\n      const q = document.getElementById('search-q').value;\n      const res = await fetch(api + '\/search?q=' + encodeURIComponent(q));\n      document.getElementById('search-result').innerHTML = await res.text();\n    }\n\n    async function doLogin() {\n      const username = document.getElementById('username').value;\n      const password = document.getElementById('password').value;\n      const res = await fetch(api + '\/login', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ username, password })\n      });\n      document.getElementById('login-result').textContent =\n        res.ok ? 'Logged in' : 'Invalid credentials';\n    }\n\n    document.getElementById('add-btn').onclick = addTodo;\n    document.getElementById('search-btn').onclick = doSearch;\n    document.getElementById('login-btn').onclick = doLogin;\n    document.getElementById('new-title').addEventListener('keydown', e => {\n      if (e.key === 'Enter') addTodo();\n    });\n\n    loadTodos();\n  <\/script>\n<\/body>\n<\/html>\n"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/openapi\/v1.json"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": ""
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+               },
+               "ruleId": "10021",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/openapi\/v1.json",
+                   "method": "GET",
+                   "headers": {
+                       "Accept" : "application\/json,*\/*",
+                       "cache-control" : "no-cache",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Type" : "application\/json;charset=utf-8",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET",
+                       "content-length" : "5691"
+                   },
+                   "body": {
+                       "text": "{\n  \"openapi\": \"3.1.1\",\n  \"info\": {\n    \"title\": \"SimpleApi | v1\",\n    \"version\": \"1.0.0\"\n  },\n  \"servers\": [\n    {\n      \"url\": \"http:\/\/localhost:5132\/\"\n    }\n  ],\n  \"paths\": {\n    \"\/todos\": {\n      \"get\": {\n        \"tags\": [\n          \"SimpleApi\"\n        ],\n        \"responses\": {\n          \"200\": {\n            \"description\": \"OK\",\n            \"content\": {\n              \"application\/json\": {\n                \"schema\": {\n                  \"type\": \"array\",\n                  \"items\": {\n                    \"$ref\": \"#\/components\/schemas\/Todo\"\n                  }\n                }\n              }\n            }\n          }\n        }\n      },\n      \"post\": {\n        \"tags\": [\n          \"SimpleApi\"\n        ],\n        \"requestBody\": {\n          \"content\": {\n            \"application\/json\": {\n              \"schema\": {\n                \"$ref\": \"#\/components\/schemas\/TodoInput\"\n              }\n            }\n          },\n          \"required\": true\n        },\n        \"responses\": {\n          \"200\": {\n            \"description\": \"OK\"\n          }\n        }\n      }\n    },\n    \"\/todos\/{id}\": {\n      \"get\": {\n        \"tags\": [\n          \"SimpleApi\"\n        ],\n        \"parameters\": [\n          {\n            \"name\": \"id\",\n            \"in\": \"path\",\n            \"required\": true,\n            \"schema\": {\n              \"pattern\": \"^-?(?:0|[1-9]\\\\d*)$\",\n              \"type\": [\n                \"integer\",\n                \"string\"\n              ],\n              \"format\": \"int32\"\n            }\n          }\n        ],\n        \"responses\": {\n          \"200\": {\n            \"description\": \"OK\"\n          }\n        }\n      },\n      \"put\": {\n        \"tags\": [\n          \"SimpleApi\"\n        ],\n        \"parameters\": [\n          {\n            \"name\": \"id\",\n            \"in\": \"path\",\n            \"required\": true,\n            \"schema\": {\n              \"pattern\": \"^-?(?:0|[1-9]\\\\d*)$\",\n              \"type\": [\n                \"integer\",\n                \"string\"\n              ],\n              \"format\": \"int32\"\n            }\n          }\n        ],\n        \"requestBody\": {\n          \"content\": {\n            \"application\/json\": {\n              \"schema\": {\n                \"$ref\": \"#\/components\/schemas\/TodoInput\"\n              }\n            }\n          },\n          \"required\": true\n        },\n        \"responses\": {\n          \"200\": {\n            \"description\": \"OK\"\n          }\n        }\n      },\n      \"delete\": {\n        \"tags\": [\n          \"SimpleApi\"\n        ],\n        \"parameters\": [\n          {\n            \"name\": \"id\",\n            \"in\": \"path\",\n            \"required\": true,\n            \"schema\": {\n              \"pattern\": \"^-?(?:0|[1-9]\\\\d*)$\",\n              \"type\": [\n                \"integer\",\n                \"string\"\n              ],\n              \"format\": \"int32\"\n            }\n          }\n        ],\n        \"responses\": {\n          \"200\": {\n            \"description\": \"OK\"\n          }\n        }\n      }\n    },\n    \"\/search\": {\n      \"get\": {\n        \"tags\": [\n          \"SimpleApi\"\n        ],\n        \"parameters\": [\n          {\n            \"name\": \"q\",\n            \"in\": \"query\",\n            \"schema\": {\n              \"type\": \"string\"\n            }\n          }\n        ],\n        \"responses\": {\n          \"200\": {\n            \"description\": \"OK\"\n          }\n        }\n      }\n    },\n    \"\/debug\/error\": {\n      \"get\": {\n        \"tags\": [\n          \"SimpleApi\"\n        ],\n        \"responses\": {\n          \"200\": {\n            \"description\": \"OK\"\n          }\n        }\n      }\n    },\n    \"\/login\": {\n      \"post\": {\n        \"tags\": [\n          \"SimpleApi\"\n        ],\n        \"requestBody\": {\n          \"content\": {\n            \"application\/json\": {\n              \"schema\": {\n                \"$ref\": \"#\/components\/schemas\/LoginInput\"\n              }\n            }\n          },\n          \"required\": true\n        },\n        \"responses\": {\n          \"200\": {\n            \"description\": \"OK\"\n          }\n        }\n      }\n    },\n    \"\/me\": {\n      \"get\": {\n        \"tags\": [\n          \"SimpleApi\"\n        ],\n        \"responses\": {\n          \"200\": {\n            \"description\": \"OK\"\n          }\n        }\n      }\n    },\n    \"\/export\": {\n      \"get\": {\n        \"tags\": [\n          \"SimpleApi\"\n        ],\n        \"parameters\": [\n          {\n            \"name\": \"token\",\n            \"in\": \"query\",\n            \"schema\": {\n              \"type\": \"string\"\n            }\n          }\n        ],\n        \"responses\": {\n          \"200\": {\n            \"description\": \"OK\"\n          }\n        }\n      }\n    }\n  },\n  \"components\": {\n    \"schemas\": {\n      \"LoginInput\": {\n        \"required\": [\n          \"username\",\n          \"password\"\n        ],\n        \"type\": \"object\",\n        \"properties\": {\n          \"username\": {\n            \"type\": \"string\"\n          },\n          \"password\": {\n            \"type\": \"string\"\n          }\n        }\n      },\n      \"Todo\": {\n        \"required\": [\n          \"id\",\n          \"title\",\n          \"isComplete\"\n        ],\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"pattern\": \"^-?(?:0|[1-9]\\\\d*)$\",\n            \"type\": [\n              \"integer\",\n              \"string\"\n            ],\n            \"format\": \"int32\"\n          },\n          \"title\": {\n            \"type\": \"string\"\n          },\n          \"isComplete\": {\n            \"type\": \"boolean\"\n          }\n        }\n      },\n      \"TodoInput\": {\n        \"required\": [\n          \"title\",\n          \"isComplete\"\n        ],\n        \"type\": \"object\",\n        \"properties\": {\n          \"title\": {\n            \"type\": \"string\"\n          },\n          \"isComplete\": {\n            \"type\": \"boolean\"\n          }\n        }\n      }\n    }\n  },\n  \"tags\": [\n    {\n      \"name\": \"SimpleApi\"\n    }\n  ]\n}"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/search?q=q"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": ""
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+               },
+               "ruleId": "10021",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/search?q=q",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "75",
+                       "Content-Type" : "text\/html",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       "text": "<html><body><h1>Search Results<\/h1><p>You searched for: q<\/p><\/body><\/html>"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": ""
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+               },
+               "ruleId": "10021",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "application\/json",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Type" : "application\/json; charset=utf-8",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET",
+                       "content-length" : "102"
+                   },
+                   "body": {
+                       "text": "[{\"id\":1,\"title\":\"Buy groceries\",\"isComplete\":false},{\"id\":2,\"title\":\"Read a book\",\"isComplete\":true}]"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": ""
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+               },
+               "ruleId": "10021",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos",
+                   "method": "POST",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "38",
+                       "content-type" : "application\/json",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       "text": "{\"title\":\"John Doe\",\"isComplete\":true}"
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 201,
+                   "reasonPhrase": "Created",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Type" : "application\/json; charset=utf-8",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Location" : "\/todos\/3",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET",
+                       "content-length" : "46"
+                   },
+                   "body": {
+                       "text": "{\"id\":3,\"title\":\"John Doe\",\"isComplete\":false}"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/debug\/error"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "snippet": {
+                               "text": "Internal Server Error"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The response appeared to contain common error messages returned by platforms such as ASP.NET, and Web-servers such as IIS and Apache. You can configure the list of common debug messages."
+               },
+               "ruleId": "10023",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/debug\/error",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 500,
+                   "reasonPhrase": "Internal Server Error",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Type" : "application\/problem+json",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET",
+                       "content-length" : "310"
+                   },
+                   "body": {
+                       "text": "{\"type\":\"https:\/\/tools.ietf.org\/html\/rfc9110#section-15.6.1\",\"title\":\"Internal Server Error\",\"status\":500,\"detail\":\"System.Exception: Database connection failed: Server=prod-db;User=sa;Password=SuperSecret123!\\n   at Program.<>c.<<Main>$>b__0_8() in \/home\/ahmedelenany\/owasapzap-dotnet\/src\/Program.cs:line 85\"}"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "Microsoft-IIS\/10.0"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The web\/application server is leaking version information via the \"Server\" HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web\/application server is subject to."
+               },
+               "ruleId": "10036",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "application\/json",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Type" : "application\/json; charset=utf-8",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET",
+                       "content-length" : "102"
+                   },
+                   "body": {
+                       "text": "[{\"id\":1,\"title\":\"Buy groceries\",\"isComplete\":false},{\"id\":2,\"title\":\"Read a book\",\"isComplete\":true}]"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos\/10"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "Microsoft-IIS\/10.0"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The web\/application server is leaking version information via the \"Server\" HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web\/application server is subject to."
+               },
+               "ruleId": "10036",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos\/10",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 404,
+                   "reasonPhrase": "Not Found",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "0",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "Microsoft-IIS\/10.0"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The web\/application server is leaking version information via the \"Server\" HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web\/application server is subject to."
+               },
+               "ruleId": "10036",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos",
+                   "method": "POST",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "38",
+                       "content-type" : "application\/json",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       "text": "{\"title\":\"John Doe\",\"isComplete\":true}"
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 201,
+                   "reasonPhrase": "Created",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Type" : "application\/json; charset=utf-8",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Location" : "\/todos\/3",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET",
+                       "content-length" : "46"
+                   },
+                   "body": {
+                       "text": "{\"id\":3,\"title\":\"John Doe\",\"isComplete\":false}"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos\/10"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "X-Powered-By: ASP.NET"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The web\/application server is leaking information via one or more \"X-Powered-By\" HTTP response headers. Access to such information may facilitate attackers identifying other frameworks\/components your web application is reliant upon and the vulnerabilities such components may be subject to."
+               },
+               "ruleId": "10037",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos\/10",
+                   "method": "DELETE",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 404,
+                   "reasonPhrase": "Not Found",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "0",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/debug\/error"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "X-Powered-By: ASP.NET"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The web\/application server is leaking information via one or more \"X-Powered-By\" HTTP response headers. Access to such information may facilitate attackers identifying other frameworks\/components your web application is reliant upon and the vulnerabilities such components may be subject to."
+               },
+               "ruleId": "10037",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/debug\/error",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 500,
+                   "reasonPhrase": "Internal Server Error",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Type" : "application\/problem+json",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET",
+                       "content-length" : "310"
+                   },
+                   "body": {
+                       "text": "{\"type\":\"https:\/\/tools.ietf.org\/html\/rfc9110#section-15.6.1\",\"title\":\"Internal Server Error\",\"status\":500,\"detail\":\"System.Exception: Database connection failed: Server=prod-db;User=sa;Password=SuperSecret123!\\n   at Program.<>c.<<Main>$>b__0_8() in \/home\/ahmedelenany\/owasapzap-dotnet\/src\/Program.cs:line 85\"}"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/search?q=q"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "X-Powered-By: ASP.NET"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The web\/application server is leaking information via one or more \"X-Powered-By\" HTTP response headers. Access to such information may facilitate attackers identifying other frameworks\/components your web application is reliant upon and the vulnerabilities such components may be subject to."
+               },
+               "ruleId": "10037",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/search?q=q",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "75",
+                       "Content-Type" : "text\/html",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       "text": "<html><body><h1>Search Results<\/h1><p>You searched for: q<\/p><\/body><\/html>"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos\/10"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "X-Powered-By: ASP.NET"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The web\/application server is leaking information via one or more \"X-Powered-By\" HTTP response headers. Access to such information may facilitate attackers identifying other frameworks\/components your web application is reliant upon and the vulnerabilities such components may be subject to."
+               },
+               "ruleId": "10037",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos\/10",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 404,
+                   "reasonPhrase": "Not Found",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "0",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos\/10"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "X-Powered-By: ASP.NET"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The web\/application server is leaking information via one or more \"X-Powered-By\" HTTP response headers. Access to such information may facilitate attackers identifying other frameworks\/components your web application is reliant upon and the vulnerabilities such components may be subject to."
+               },
+               "ruleId": "10037",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos\/10",
+                   "method": "PUT",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "38",
+                       "content-type" : "application\/json",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       "text": "{\"title\":\"John Doe\",\"isComplete\":true}"
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 404,
+                   "reasonPhrase": "Not Found",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "0",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos\/10"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "4.0.30319"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "An attacker can use this information to exploit known vulnerabilities."
+               },
+               "ruleId": "10061",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos\/10",
+                   "method": "DELETE",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 404,
+                   "reasonPhrase": "Not Found",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "0",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/debug\/error"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "4.0.30319"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "An attacker can use this information to exploit known vulnerabilities."
+               },
+               "ruleId": "10061",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/debug\/error",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 500,
+                   "reasonPhrase": "Internal Server Error",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Type" : "application\/problem+json",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET",
+                       "content-length" : "310"
+                   },
+                   "body": {
+                       "text": "{\"type\":\"https:\/\/tools.ietf.org\/html\/rfc9110#section-15.6.1\",\"title\":\"Internal Server Error\",\"status\":500,\"detail\":\"System.Exception: Database connection failed: Server=prod-db;User=sa;Password=SuperSecret123!\\n   at Program.<>c.<<Main>$>b__0_8() in \/home\/ahmedelenany\/owasapzap-dotnet\/src\/Program.cs:line 85\"}"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "4.0.30319"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "An attacker can use this information to exploit known vulnerabilities."
+               },
+               "ruleId": "10061",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "application\/json",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Type" : "application\/json; charset=utf-8",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET",
+                       "content-length" : "102"
+                   },
+                   "body": {
+                       "text": "[{\"id\":1,\"title\":\"Buy groceries\",\"isComplete\":false},{\"id\":2,\"title\":\"Read a book\",\"isComplete\":true}]"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos\/10"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "4.0.30319"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "An attacker can use this information to exploit known vulnerabilities."
+               },
+               "ruleId": "10061",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos\/10",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 404,
+                   "reasonPhrase": "Not Found",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "0",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/todos\/10"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "4.0.30319"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "An attacker can use this information to exploit known vulnerabilities."
+               },
+               "ruleId": "10061",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/todos\/10",
+                   "method": "PUT",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "38",
+                       "content-type" : "application\/json",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       "text": "{\"title\":\"John Doe\",\"isComplete\":true}"
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 404,
+                   "reasonPhrase": "Not Found",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "0",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "note",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/debug\/error"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "HTTP\/1.1 500 Internal Server Error"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "This page contains an error\/warning message that may disclose sensitive information like the location of the file that produced the unhandled exception. This information can be used to launch further attacks against the web application. The alert could be a false positive if the error message is found inside a documentation page."
+               },
+               "ruleId": "90022",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/debug\/error",
+                   "method": "GET",
+                   "headers": {
+                       "cache-control" : "no-cache",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : ""
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 500,
+                   "reasonPhrase": "Internal Server Error",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Type" : "application\/problem+json",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET",
+                       "content-length" : "310"
+                   },
+                   "body": {
+                       "text": "{\"type\":\"https:\/\/tools.ietf.org\/html\/rfc9110#section-15.6.1\",\"title\":\"Internal Server Error\",\"status\":500,\"detail\":\"System.Exception: Database connection failed: Server=prod-db;User=sa;Password=SuperSecret123!\\n   at Program.<>c.<<Main>$>b__0_8() in \/home\/ahmedelenany\/owasapzap-dotnet\/src\/Program.cs:line 85\"}"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "none",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/export?token=token"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "token"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "The URL contains potentially sensitive information. The following string was found via the pattern: token\ntoken"
+               },
+               "ruleId": "10024",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/export?token=token",
+                   "method": "GET",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "0",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 401,
+                   "reasonPhrase": "Unauthorized",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "0",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "none",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "<script>\n    const api = '';\n\n    async function loadTodos() {\n      const res = await fetch(api + '\/todos');\n      const todos = await res.json();\n      const list = document.getElementById('todo-list');\n      list.innerHTML = '';\n      for (const t of todos) {\n        const li = document.createElement('li');\n        if (t.isComplete) li.classList.add('done');\n        const checkbox = document.createElement('input');\n        checkbox.type = 'checkbox';\n        checkbox.checked = t.isComplete;\n        checkbox.onchange = () => toggleTodo(t);\n        const span = document.createElement('span');\n        span.textContent = t.title;\n        span.style.flex = '1';\n        const del = document.createElement('button');\n        del.className = 'delete';\n        del.textContent = 'X';\n        del.onclick = () => deleteTodo(t.id);\n        li.append(checkbox, span, del);\n        list.appendChild(li);\n      }\n    }\n\n    async function addTodo() {\n      const input = document.getElementById('new-title');\n      const title"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+               },
+               "ruleId": "10109",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132",
+                   "method": "GET",
+                   "headers": {
+                       "cache-control" : "no-cache",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : ""
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Accept-Ranges" : "bytes",
+                       "Content-Length" : "4465",
+                       "Content-Type" : "text\/html",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "ETag" : "\"1dcd8d776faeb71\"",
+                       "Last-Modified" : "Thu, 30 Apr 2026 19:28:04 GMT",
+                       "Server" : "Kestrel"
+                   },
+                   "body": {
+                       "text": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" \/>\n  <title>Todo Demo<\/title>\n  <style>\n    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }\n    h1 { margin-bottom: 0.25rem; }\n    section { background: #f6f6f6; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }\n    input, button { padding: 0.5rem; font-size: 1rem; }\n    ul { list-style: none; padding: 0; }\n    li { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid #ddd; }\n    li.done span { text-decoration: line-through; color: #888; }\n    .delete { color: crimson; cursor: pointer; background: none; border: none; font-size: 1.1rem; }\n    .row { display: flex; gap: 0.5rem; }\n    .row input { flex: 1; }\n    #search-result { background: #fff; padding: 0.5rem; border-radius: 4px; min-height: 1.5rem; }\n  <\/style>\n<\/head>\n<body>\n  <h1>Todo Demo<\/h1>\n  <p>A vulnerable demo app for OWASP ZAP scanning.<\/p>\n\n  <section>\n    <h2>Todos<\/h2>\n    <div class=\"row\">\n      <input id=\"new-title\" placeholder=\"What needs doing?\" \/>\n      <button id=\"add-btn\">Add<\/button>\n    <\/div>\n    <ul id=\"todo-list\"><\/ul>\n  <\/section>\n\n  <section>\n    <h2>Search<\/h2>\n    <div class=\"row\">\n      <input id=\"search-q\" placeholder=\"Search...\" \/>\n      <button id=\"search-btn\">Search<\/button>\n    <\/div>\n    <div id=\"search-result\"><\/div>\n  <\/section>\n\n  <section>\n    <h2>Login<\/h2>\n    <div class=\"row\">\n      <input id=\"username\" placeholder=\"username\" \/>\n      <input id=\"password\" type=\"password\" placeholder=\"password\" \/>\n      <button id=\"login-btn\">Log in<\/button>\n    <\/div>\n    <div id=\"login-result\"><\/div>\n  <\/section>\n\n  <script>\n    const api = '';\n\n    async function loadTodos() {\n      const res = await fetch(api + '\/todos');\n      const todos = await res.json();\n      const list = document.getElementById('todo-list');\n      list.innerHTML = '';\n      for (const t of todos) {\n        const li = document.createElement('li');\n        if (t.isComplete) li.classList.add('done');\n        const checkbox = document.createElement('input');\n        checkbox.type = 'checkbox';\n        checkbox.checked = t.isComplete;\n        checkbox.onchange = () => toggleTodo(t);\n        const span = document.createElement('span');\n        span.textContent = t.title;\n        span.style.flex = '1';\n        const del = document.createElement('button');\n        del.className = 'delete';\n        del.textContent = 'X';\n        del.onclick = () => deleteTodo(t.id);\n        li.append(checkbox, span, del);\n        list.appendChild(li);\n      }\n    }\n\n    async function addTodo() {\n      const input = document.getElementById('new-title');\n      const title = input.value.trim();\n      if (!title) return;\n      await fetch(api + '\/todos', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title, isComplete: false })\n      });\n      input.value = '';\n      loadTodos();\n    }\n\n    async function toggleTodo(t) {\n      await fetch(api + '\/todos\/' + t.id, {\n        method: 'PUT',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title: t.title, isComplete: !t.isComplete })\n      });\n      loadTodos();\n    }\n\n    async function deleteTodo(id) {\n      await fetch(api + '\/todos\/' + id, { method: 'DELETE' });\n      loadTodos();\n    }\n\n    async function doSearch() {\n      const q = document.getElementById('search-q').value;\n      const res = await fetch(api + '\/search?q=' + encodeURIComponent(q));\n      document.getElementById('search-result').innerHTML = await res.text();\n    }\n\n    async function doLogin() {\n      const username = document.getElementById('username').value;\n      const password = document.getElementById('password').value;\n      const res = await fetch(api + '\/login', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ username, password })\n      });\n      document.getElementById('login-result').textContent =\n        res.ok ? 'Logged in' : 'Invalid credentials';\n    }\n\n    document.getElementById('add-btn').onclick = addTodo;\n    document.getElementById('search-btn').onclick = doSearch;\n    document.getElementById('login-btn').onclick = doLogin;\n    document.getElementById('new-title').addEventListener('keydown', e => {\n      if (e.key === 'Enter') addTodo();\n    });\n\n    loadTodos();\n  <\/script>\n<\/body>\n<\/html>\n"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "none",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "<script>\n    const api = '';\n\n    async function loadTodos() {\n      const res = await fetch(api + '\/todos');\n      const todos = await res.json();\n      const list = document.getElementById('todo-list');\n      list.innerHTML = '';\n      for (const t of todos) {\n        const li = document.createElement('li');\n        if (t.isComplete) li.classList.add('done');\n        const checkbox = document.createElement('input');\n        checkbox.type = 'checkbox';\n        checkbox.checked = t.isComplete;\n        checkbox.onchange = () => toggleTodo(t);\n        const span = document.createElement('span');\n        span.textContent = t.title;\n        span.style.flex = '1';\n        const del = document.createElement('button');\n        del.className = 'delete';\n        del.textContent = 'X';\n        del.onclick = () => deleteTodo(t.id);\n        li.append(checkbox, span, del);\n        list.appendChild(li);\n      }\n    }\n\n    async function addTodo() {\n      const input = document.getElementById('new-title');\n      const title"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "No links have been found while there are scripts, which is an indication that this is a modern web application."
+               },
+               "ruleId": "10109",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/",
+                   "method": "GET",
+                   "headers": {
+                       "cache-control" : "no-cache",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : ""
+                   },
+                   "body": {
+                       
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 200,
+                   "reasonPhrase": "OK",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Accept-Ranges" : "bytes",
+                       "Content-Length" : "4465",
+                       "Content-Type" : "text\/html",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "ETag" : "\"1dcd8d776faeb71\"",
+                       "Last-Modified" : "Thu, 30 Apr 2026 19:28:04 GMT",
+                       "Server" : "Kestrel"
+                   },
+                   "body": {
+                       "text": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" \/>\n  <title>Todo Demo<\/title>\n  <style>\n    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }\n    h1 { margin-bottom: 0.25rem; }\n    section { background: #f6f6f6; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }\n    input, button { padding: 0.5rem; font-size: 1rem; }\n    ul { list-style: none; padding: 0; }\n    li { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid #ddd; }\n    li.done span { text-decoration: line-through; color: #888; }\n    .delete { color: crimson; cursor: pointer; background: none; border: none; font-size: 1.1rem; }\n    .row { display: flex; gap: 0.5rem; }\n    .row input { flex: 1; }\n    #search-result { background: #fff; padding: 0.5rem; border-radius: 4px; min-height: 1.5rem; }\n  <\/style>\n<\/head>\n<body>\n  <h1>Todo Demo<\/h1>\n  <p>A vulnerable demo app for OWASP ZAP scanning.<\/p>\n\n  <section>\n    <h2>Todos<\/h2>\n    <div class=\"row\">\n      <input id=\"new-title\" placeholder=\"What needs doing?\" \/>\n      <button id=\"add-btn\">Add<\/button>\n    <\/div>\n    <ul id=\"todo-list\"><\/ul>\n  <\/section>\n\n  <section>\n    <h2>Search<\/h2>\n    <div class=\"row\">\n      <input id=\"search-q\" placeholder=\"Search...\" \/>\n      <button id=\"search-btn\">Search<\/button>\n    <\/div>\n    <div id=\"search-result\"><\/div>\n  <\/section>\n\n  <section>\n    <h2>Login<\/h2>\n    <div class=\"row\">\n      <input id=\"username\" placeholder=\"username\" \/>\n      <input id=\"password\" type=\"password\" placeholder=\"password\" \/>\n      <button id=\"login-btn\">Log in<\/button>\n    <\/div>\n    <div id=\"login-result\"><\/div>\n  <\/section>\n\n  <script>\n    const api = '';\n\n    async function loadTodos() {\n      const res = await fetch(api + '\/todos');\n      const todos = await res.json();\n      const list = document.getElementById('todo-list');\n      list.innerHTML = '';\n      for (const t of todos) {\n        const li = document.createElement('li');\n        if (t.isComplete) li.classList.add('done');\n        const checkbox = document.createElement('input');\n        checkbox.type = 'checkbox';\n        checkbox.checked = t.isComplete;\n        checkbox.onchange = () => toggleTodo(t);\n        const span = document.createElement('span');\n        span.textContent = t.title;\n        span.style.flex = '1';\n        const del = document.createElement('button');\n        del.className = 'delete';\n        del.textContent = 'X';\n        del.onclick = () => deleteTodo(t.id);\n        li.append(checkbox, span, del);\n        list.appendChild(li);\n      }\n    }\n\n    async function addTodo() {\n      const input = document.getElementById('new-title');\n      const title = input.value.trim();\n      if (!title) return;\n      await fetch(api + '\/todos', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title, isComplete: false })\n      });\n      input.value = '';\n      loadTodos();\n    }\n\n    async function toggleTodo(t) {\n      await fetch(api + '\/todos\/' + t.id, {\n        method: 'PUT',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ title: t.title, isComplete: !t.isComplete })\n      });\n      loadTodos();\n    }\n\n    async function deleteTodo(id) {\n      await fetch(api + '\/todos\/' + id, { method: 'DELETE' });\n      loadTodos();\n    }\n\n    async function doSearch() {\n      const q = document.getElementById('search-q').value;\n      const res = await fetch(api + '\/search?q=' + encodeURIComponent(q));\n      document.getElementById('search-result').innerHTML = await res.text();\n    }\n\n    async function doLogin() {\n      const username = document.getElementById('username').value;\n      const password = document.getElementById('password').value;\n      const res = await fetch(api + '\/login', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application\/json' },\n        body: JSON.stringify({ username, password })\n      });\n      document.getElementById('login-result').textContent =\n        res.ok ? 'Logged in' : 'Invalid credentials';\n    }\n\n    document.getElementById('add-btn').onclick = addTodo;\n    document.getElementById('search-btn').onclick = doSearch;\n    document.getElementById('login-btn').onclick = doLogin;\n    document.getElementById('new-title').addEventListener('keydown', e => {\n      if (e.key === 'Enter') addTodo();\n    });\n\n    loadTodos();\n  <\/script>\n<\/body>\n<\/html>\n"
+                   },
+                   "noResponseReceived": false
+               }
+            },
+            {
+               "level": "none",
+               "locations": [
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": "http:\/\/localhost:5132\/login"
+                        },
+                        
+                        "region": {
+                           "startLine": 1,
+                           
+                           "properties" : { 
+                               "startLineFailure" : "Resolved invalid start line: 0 - used fallback value instead."
+                            }, 
+                           "snippet": {
+                               "text": "password"
+                           }
+                        }
+                     },
+                     "properties": {
+                         "attack": ""
+                     }
+                  }
+               ],
+               "message": {
+                  "text": "userParam=username\nuserValue=John Doe\npasswordParam=password"
+               },
+               "ruleId": "10111",
+               "webRequest": {
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "target": "http:\/\/localhost:5132\/login",
+                   "method": "POST",
+                   "headers": {
+                       "accept" : "*\/*",
+                       "cache-control" : "no-cache",
+                       "content-length" : "40",
+                       "content-type" : "application\/json",
+                       "host" : "localhost:5132",
+                       "pragma" : "no-cache",
+                       "user-agent" : "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/141.0.0.0 Safari\/537.36"
+                   },
+                   "body": {
+                       "text": "{\"username\":\"John Doe\",\"password\":\"ZAP\"}"
+                   }
+               },
+               "webResponse": {
+                   "statusCode": 401,
+                   "reasonPhrase": "Unauthorized",
+                   "protocol": "HTTP",
+                   "version": "1.1",
+                   "headers": {
+                       "Content-Length" : "0",
+                       "Date" : "Sun, 03 May 2026 14:43:20 GMT",
+                       "Server" : "Microsoft-IIS\/10.0",
+                       "X-AspNet-Version" : "4.0.30319",
+                       "X-Powered-By" : "ASP.NET"
+                   },
+                   "body": {
+                       
+                   },
+                   "noResponseReceived": false
+               }
+            }
+         ],
+         "taxonomies": [
+            {
+               "downloadUri": "https:\/\/cwe.mitre.org\/data\/xml\/cwec_v4.8.xml.zip",
+               "guid":  "b000a760-3e52-3565-a35c-f61369da53b7",
+               "informationUri": "https:\/\/cwe.mitre.org\/data\/published\/cwe_v4.8.pdf",
+               "isComprehensive": true,
+               "language": "en",
+               "minimumRequiredLocalizedDataSemanticVersion": "4.8",
+               "name":  "CWE",
+               "organization": "MITRE",
+               "releaseDateUtc": "2022-06-28",
+               "shortDescription": {
+                  "text": "The MITRE Common Weakness Enumeration"
+               },
+               "taxa": [
+                  {
+                     "guid": "098ecca7-f059-3e81-a2ff-a54023da4848",
+                     "helpUri": "https:\/\/cwe.mitre.org\/data\/definitions\/-1.html",
+                     "id": "-1"
+                  },
+                  {
+                     "guid": "b70a7030-c124-3e5f-a628-a76f82820eed",
+                     "helpUri": "https:\/\/cwe.mitre.org\/data\/definitions\/497.html",
+                     "id": "497"
+                  },
+                  {
+                     "guid": "cda8daff-04d0-303e-8191-8c5a6320f75d",
+                     "helpUri": "https:\/\/cwe.mitre.org\/data\/definitions\/550.html",
+                     "id": "550"
+                  },
+                  {
+                     "guid": "a962936e-8d6b-3950-b2f6-18474bc1b712",
+                     "helpUri": "https:\/\/cwe.mitre.org\/data\/definitions\/598.html",
+                     "id": "598"
+                  },
+                  {
+                     "guid": "c60fb1e0-6538-36e7-9dfd-7702d6cf8b1f",
+                     "helpUri": "https:\/\/cwe.mitre.org\/data\/definitions\/693.html",
+                     "id": "693"
+                  },
+                  {
+                     "guid": "a471697a-f568-345e-864c-bd41cf395d57",
+                     "helpUri": "https:\/\/cwe.mitre.org\/data\/definitions\/933.html",
+                     "id": "933"
+                  },
+                  {
+                     "guid": "d8d0ef05-721c-3cbc-8dff-5209722467f8",
+                     "helpUri": "https:\/\/cwe.mitre.org\/data\/definitions\/1021.html",
+                     "id": "1021"
+                  },
+                  {
+                     "guid": "5b59522b-6323-31af-8e0c-9b85e0a5e135",
+                     "helpUri": "https:\/\/cwe.mitre.org\/data\/definitions\/1295.html",
+                     "id": "1295"
+                  }
+               ],
+               "version": "4.8"
+            }
+         ],
+         "tool": {
+            "driver": {
+               "guid": "3716e880-7ee2-34d2-9cf1-0f88c0dc613a",
+               "informationUri": "https:\/\/www.zaproxy.org\/",
+               "name": "ZAP",
+               "rules": [ 
+                  {
+                     "id": "10020",
+                     "defaultConfiguration": {
+                        "level": "warning"
+                     },
+                     "fullDescription": {
+                        "text": "The response does not protect against 'ClickJacking' attacks. It should include either Content-Security-Policy with 'frame-ancestors' directive or X-Frame-Options."
+                     },
+                     "name": "Missing Anti-clickjacking Header",
+                     "properties": {
+                            "references": [
+                                "https:\/\/developer.mozilla.org\/en-US\/docs\/Web\/HTTP\/Reference\/Headers\/X-Frame-Options"
+                            ],
+                            "solution": {
+                                "text": "Modern Web browsers support the Content-Security-Policy and X-Frame-Options HTTP headers. Ensure one of them is set on all web pages returned by your site\/app.\nIf you expect the page to be framed only by pages on your server (e.g. it's part of a FRAMESET) then you'll want to use SAMEORIGIN, otherwise if you never expect the page to be framed, you should use DENY. Alternatively consider implementing Content Security Policy's \"frame-ancestors\" directive."
+                            },
+                            "confidence": "medium"
+                     },
+                     "relationships": [ 
+                        {
+                           "kinds": [
+                              "superset"
+                           ],
+                           "target": {
+                              "guid":"d8d0ef05-721c-3cbc-8dff-5209722467f8",
+                              "id": "1021",
+                              "toolComponent": {
+                                 "guid": "b000a760-3e52-3565-a35c-f61369da53b7",
+                                 "name": "CWE"
+                              }
+                           }
+                        }
+                        
+                     ],
+                     "shortDescription": {
+                        "text": "Missing Anti-clickjacking Header"
+                     }
+                  },
+                  {
+                     "id": "10021",
+                     "defaultConfiguration": {
+                        "level": "note"
+                     },
+                     "fullDescription": {
+                        "text": "The Anti-MIME-Sniffing header X-Content-Type-Options was not set to 'nosniff'. This allows older versions of Internet Explorer and Chrome to perform MIME-sniffing on the response body, potentially causing the response body to be interpreted and displayed as a content type other than the declared content type. Current (early 2014) and legacy versions of Firefox will use the declared content type (if one is set), rather than performing MIME-sniffing."
+                     },
+                     "name": "X-Content-Type-Options Header Missing",
+                     "properties": {
+                            "references": [
+                                "https:\/\/learn.microsoft.com\/en-us\/previous-versions\/windows\/internet-explorer\/ie-developer\/compatibility\/gg622941(v=vs.85)",
+                                "https:\/\/owasp.org\/www-community\/Security_Headers"
+                            ],
+                            "solution": {
+                                "text": "Ensure that the application\/web server sets the Content-Type header appropriately, and that it sets the X-Content-Type-Options header to 'nosniff' for all web pages.\nIf possible, ensure that the end user uses a standards-compliant and modern web browser that does not perform MIME-sniffing at all, or that can be directed by the web application\/web server to not perform MIME-sniffing."
+                            },
+                            "confidence": "medium"
+                     },
+                     "relationships": [ 
+                        {
+                           "kinds": [
+                              "superset"
+                           ],
+                           "target": {
+                              "guid":"c60fb1e0-6538-36e7-9dfd-7702d6cf8b1f",
+                              "id": "693",
+                              "toolComponent": {
+                                 "guid": "b000a760-3e52-3565-a35c-f61369da53b7",
+                                 "name": "CWE"
+                              }
+                           }
+                        }
+                        
+                     ],
+                     "shortDescription": {
+                        "text": "X-Content-Type-Options Header Missing"
+                     }
+                  },
+                  {
+                     "id": "10023",
+                     "defaultConfiguration": {
+                        "level": "note"
+                     },
+                     "fullDescription": {
+                        "text": "The response appeared to contain common error messages returned by platforms such as ASP.NET, and Web-servers such as IIS and Apache. You can configure the list of common debug messages."
+                     },
+                     "name": "Information Disclosure - Debug Error Messages",
+                     "properties": {
+                            "references": [],
+                            "solution": {
+                                "text": "Disable debugging messages before pushing to production."
+                            },
+                            "confidence": "medium"
+                     },
+                     "relationships": [ 
+                        {
+                           "kinds": [
+                              "superset"
+                           ],
+                           "target": {
+                              "guid":"5b59522b-6323-31af-8e0c-9b85e0a5e135",
+                              "id": "1295",
+                              "toolComponent": {
+                                 "guid": "b000a760-3e52-3565-a35c-f61369da53b7",
+                                 "name": "CWE"
+                              }
+                           }
+                        }
+                        
+                     ],
+                     "shortDescription": {
+                        "text": "Information Disclosure - Debug Error Messages"
+                     }
+                  },
+                  {
+                     "id": "10024",
+                     "defaultConfiguration": {
+                        "level": "none"
+                     },
+                     "fullDescription": {
+                        "text": "The request appeared to contain sensitive information leaked in the URL. This can violate PCI and most organizational compliance policies. You can configure the list of strings for this check to add or remove values specific to your environment."
+                     },
+                     "name": "Information Disclosure - Sensitive Information in URL",
+                     "properties": {
+                            "references": [],
+                            "solution": {
+                                "text": "Do not pass sensitive information in URIs."
+                            },
+                            "confidence": "medium"
+                     },
+                     "relationships": [ 
+                        {
+                           "kinds": [
+                              "superset"
+                           ],
+                           "target": {
+                              "guid":"a962936e-8d6b-3950-b2f6-18474bc1b712",
+                              "id": "598",
+                              "toolComponent": {
+                                 "guid": "b000a760-3e52-3565-a35c-f61369da53b7",
+                                 "name": "CWE"
+                              }
+                           }
+                        }
+                        
+                     ],
+                     "shortDescription": {
+                        "text": "Information Disclosure - Sensitive Information in URL"
+                     }
+                  },
+                  {
+                     "id": "10036",
+                     "defaultConfiguration": {
+                        "level": "note"
+                     },
+                     "fullDescription": {
+                        "text": "The web\/application server is leaking version information via the \"Server\" HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web\/application server is subject to."
+                     },
+                     "name": "Server Leaks Version Information via \"Server\" HTTP Response Header Field",
+                     "properties": {
+                            "references": [
+                                "https:\/\/httpd.apache.org\/docs\/current\/mod\/core.html#servertokens",
+                                "https:\/\/learn.microsoft.com\/en-us\/previous-versions\/msp-n-p\/ff648552(v=pandp.10)",
+                                "https:\/\/www.troyhunt.com\/shhh-dont-let-your-response-headers\/"
+                            ],
+                            "solution": {
+                                "text": "Ensure that your web server, application server, load balancer, etc. is configured to suppress the \"Server\" header or provide generic details."
+                            },
+                            "confidence": "high"
+                     },
+                     "relationships": [ 
+                        {
+                           "kinds": [
+                              "superset"
+                           ],
+                           "target": {
+                              "guid":"b70a7030-c124-3e5f-a628-a76f82820eed",
+                              "id": "497",
+                              "toolComponent": {
+                                 "guid": "b000a760-3e52-3565-a35c-f61369da53b7",
+                                 "name": "CWE"
+                              }
+                           }
+                        }
+                        
+                     ],
+                     "shortDescription": {
+                        "text": "Server Leaks Version Information via \"Server\" HTTP Response Header Field"
+                     }
+                  },
+                  {
+                     "id": "10037",
+                     "defaultConfiguration": {
+                        "level": "note"
+                     },
+                     "fullDescription": {
+                        "text": "The web\/application server is leaking information via one or more \"X-Powered-By\" HTTP response headers. Access to such information may facilitate attackers identifying other frameworks\/components your web application is reliant upon and the vulnerabilities such components may be subject to."
+                     },
+                     "name": "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)",
+                     "properties": {
+                            "references": [
+                                "https:\/\/owasp.org\/www-project-web-security-testing-guide\/v42\/4-Web_Application_Security_Testing\/01-Information_Gathering\/08-Fingerprint_Web_Application_Framework",
+                                "https:\/\/www.troyhunt.com\/shhh-dont-let-your-response-headers\/"
+                            ],
+                            "solution": {
+                                "text": "Ensure that your web server, application server, load balancer, etc. is configured to suppress \"X-Powered-By\" headers."
+                            },
+                            "confidence": "medium"
+                     },
+                     "relationships": [ 
+                        {
+                           "kinds": [
+                              "superset"
+                           ],
+                           "target": {
+                              "guid":"b70a7030-c124-3e5f-a628-a76f82820eed",
+                              "id": "497",
+                              "toolComponent": {
+                                 "guid": "b000a760-3e52-3565-a35c-f61369da53b7",
+                                 "name": "CWE"
+                              }
+                           }
+                        }
+                        
+                     ],
+                     "shortDescription": {
+                        "text": "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)"
+                     }
+                  },
+                  {
+                     "id": "10038",
+                     "defaultConfiguration": {
+                        "level": "warning"
+                     },
+                     "fullDescription": {
+                        "text": "Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files."
+                     },
+                     "name": "Content Security Policy (CSP) Header Not Set",
+                     "properties": {
+                            "references": [
+                                "https:\/\/developer.mozilla.org\/en-US\/docs\/Web\/HTTP\/Guides\/CSP",
+                                "https:\/\/cheatsheetseries.owasp.org\/cheatsheets\/Content_Security_Policy_Cheat_Sheet.html",
+                                "https:\/\/www.w3.org\/TR\/CSP\/",
+                                "https:\/\/w3c.github.io\/webappsec-csp\/",
+                                "https:\/\/web.dev\/articles\/csp",
+                                "https:\/\/caniuse.com\/#feat=contentsecuritypolicy",
+                                "https:\/\/content-security-policy.com\/"
+                            ],
+                            "solution": {
+                                "text": "Ensure that your web server, application server, load balancer, etc. is configured to set the Content-Security-Policy header."
+                            },
+                            "confidence": "high"
+                     },
+                     "relationships": [ 
+                        {
+                           "kinds": [
+                              "superset"
+                           ],
+                           "target": {
+                              "guid":"c60fb1e0-6538-36e7-9dfd-7702d6cf8b1f",
+                              "id": "693",
+                              "toolComponent": {
+                                 "guid": "b000a760-3e52-3565-a35c-f61369da53b7",
+                                 "name": "CWE"
+                              }
+                           }
+                        }
+                        
+                     ],
+                     "shortDescription": {
+                        "text": "Content Security Policy (CSP) Header Not Set"
+                     }
+                  },
+                  {
+                     "id": "10061",
+                     "defaultConfiguration": {
+                        "level": "note"
+                     },
+                     "fullDescription": {
+                        "text": "Server leaks information via \"X-AspNet-Version\"\/\"X-AspNetMvc-Version\" HTTP response header field(s)."
+                     },
+                     "name": "X-AspNet-Version Response Header",
+                     "properties": {
+                            "references": [
+                                "https:\/\/www.troyhunt.com\/shhh-dont-let-your-response-headers\/",
+                                "https:\/\/learn.microsoft.com\/en-us\/archive\/blogs\/varunm\/remove-unwanted-http-response-headers"
+                            ],
+                            "solution": {
+                                "text": "Configure the server so it will not return those headers."
+                            },
+                            "confidence": "high"
+                     },
+                     "relationships": [ 
+                        {
+                           "kinds": [
+                              "superset"
+                           ],
+                           "target": {
+                              "guid":"a471697a-f568-345e-864c-bd41cf395d57",
+                              "id": "933",
+                              "toolComponent": {
+                                 "guid": "b000a760-3e52-3565-a35c-f61369da53b7",
+                                 "name": "CWE"
+                              }
+                           }
+                        }
+                        
+                     ],
+                     "shortDescription": {
+                        "text": "X-AspNet-Version Response Header"
+                     }
+                  },
+                  {
+                     "id": "10109",
+                     "defaultConfiguration": {
+                        "level": "none"
+                     },
+                     "fullDescription": {
+                        "text": "The application appears to be a modern web application. If you need to explore it automatically then the Ajax Spider may well be more effective than the standard one."
+                     },
+                     "name": "Modern Web Application",
+                     "properties": {
+                            "references": [],
+                            "solution": {
+                                "text": "This is an informational alert and so no changes are required."
+                            },
+                            "confidence": "medium"
+                     },
+                     "relationships": [ 
+                     ],
+                     "shortDescription": {
+                        "text": "Modern Web Application"
+                     }
+                  },
+                  {
+                     "id": "10111",
+                     "defaultConfiguration": {
+                        "level": "none"
+                     },
+                     "fullDescription": {
+                        "text": "The given request has been identified as an authentication request. The 'Other Info' field contains a set of key=value lines which identify any relevant fields. If the request is in a context which has an Authentication Method set to \"Auto-Detect\" then this rule will change the authentication to match the request identified."
+                     },
+                     "name": "Authentication Request Identified",
+                     "properties": {
+                            "references": [
+                                "https:\/\/www.zaproxy.org\/docs\/desktop\/addons\/authentication-helper\/auth-req-id\/"
+                            ],
+                            "solution": {
+                                "text": "This is an informational alert rather than a vulnerability and so there is nothing to fix."
+                            },
+                            "confidence": "high"
+                     },
+                     "relationships": [ 
+                     ],
+                     "shortDescription": {
+                        "text": "Authentication Request Identified"
+                     }
+                  },
+                  {
+                     "id": "90022",
+                     "defaultConfiguration": {
+                        "level": "note"
+                     },
+                     "fullDescription": {
+                        "text": "This page contains an error\/warning message that may disclose sensitive information like the location of the file that produced the unhandled exception. This information can be used to launch further attacks against the web application. The alert could be a false positive if the error message is found inside a documentation page."
+                     },
+                     "name": "Application Error Disclosure",
+                     "properties": {
+                            "references": [],
+                            "solution": {
+                                "text": "Review the source code of this page. Implement custom error pages. Consider implementing a mechanism to provide a unique error reference\/identifier to the client (browser) while logging the details on the server side and not exposing them to the user."
+                            },
+                            "confidence": "medium"
+                     },
+                     "relationships": [ 
+                        {
+                           "kinds": [
+                              "superset"
+                           ],
+                           "target": {
+                              "guid":"cda8daff-04d0-303e-8191-8c5a6320f75d",
+                              "id": "550",
+                              "toolComponent": {
+                                 "guid": "b000a760-3e52-3565-a35c-f61369da53b7",
+                                 "name": "CWE"
+                              }
+                           }
+                        }
+                        
+                     ],
+                     "shortDescription": {
+                        "text": "Application Error Disclosure"
+                     }
+                  }
+                  
+               ],
+               "semanticVersion": "2.17.0",
+               "supportedTaxonomies": [ 
+                  {
+                     "guid": "b000a760-3e52-3565-a35c-f61369da53b7",
+                     "name": "CWE"
+                  }
+               ],
+               "version": "2.17.0"
+            }
+         }
+      }
+   ],
+   "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+   "version": "2.1.0"
+}

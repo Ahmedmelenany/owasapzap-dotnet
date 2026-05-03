@@ -105,3 +105,19 @@ jobs:
     reportDir: /zap/wrk/reports/
     reportFile: pr-zap.json
     template: traditional-json
+
+- type: report
+  parameters:
+    reportTitle: ZAP PR Scan Report
+    reportDescription: Fast passive scan for pull requests
+    reportDir: /zap/wrk/reports/
+    reportFile: pr-zap.sarif
+    template: sarif-json
+
+- type: report
+  parameters:
+    reportTitle: ZAP PR Scan Report
+    reportDescription: Fast passive scan for pull requests
+    reportDir: /zap/wrk/reports/
+    reportFile: pr-zap.md
+    template: traditional-md
