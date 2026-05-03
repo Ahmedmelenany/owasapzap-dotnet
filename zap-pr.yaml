@@ -53,6 +53,37 @@ jobs:
   parameters:
     maxDuration: 1
 
+- type: alertFilter
+  parameters:
+    deleteGlobalAlerts: false
+  alertFilters:
+  # OpenAPI spec endpoint is documentation, not real application surface —
+  # suppress all alerts on it.
+  - ruleId: 10036
+    newRisk: 'False Positive'
+    context: todo-api
+    url: 'http://localhost:5132/openapi/.*'
+    urlRegex: true
+  - ruleId: 10037
+    newRisk: 'False Positive'
+    context: todo-api
+    url: 'http://localhost:5132/openapi/.*'
+    urlRegex: true
+  - ruleId: 10061
+    newRisk: 'False Positive'
+    context: todo-api
+    url: 'http://localhost:5132/openapi/.*'
+    urlRegex: true
+  - ruleId: 10021
+    newRisk: 'False Positive'
+    context: todo-api
+    url: 'http://localhost:5132/openapi/.*'
+    urlRegex: true
+  # Cacheability is low-value noise for an authenticated API — downgrade to Info.
+  - ruleId: 10049
+    newRisk: 'Info'
+    context: todo-api
+
 - type: outputSummary
   parameters:
     format: Long
