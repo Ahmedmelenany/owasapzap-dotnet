@@ -318,15 +318,15 @@ Ensure that your web server, application server, load balancer, etc. is configur
 
 The web/application server is leaking version information via the "Server" HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web/application server is subject to.
 
-* URL: http://localhost:5132/todos
-  * Node Name: `http://localhost:5132/todos`
-  * Method: `GET`
+* URL: http://localhost:5132/todos/10
+  * Node Name: `http://localhost:5132/todos/10`
+  * Method: `DELETE`
   * Parameter: ``
   * Attack: ``
   * Evidence: `Microsoft-IIS/10.0`
   * Other Info: ``
-* URL: http://localhost:5132/todos/10
-  * Node Name: `http://localhost:5132/todos/10`
+* URL: http://localhost:5132/debug/error
+  * Node Name: `http://localhost:5132/debug/error`
   * Method: `GET`
   * Parameter: ``
   * Attack: ``
@@ -335,6 +335,13 @@ The web/application server is leaking version information via the "Server" HTTP 
 * URL: http://localhost:5132/todos
   * Node Name: `http://localhost:5132/todos ()({title,isComplete})`
   * Method: `POST`
+  * Parameter: ``
+  * Attack: ``
+  * Evidence: `Microsoft-IIS/10.0`
+  * Other Info: ``
+* URL: http://localhost:5132/todos/10
+  * Node Name: `http://localhost:5132/todos/10 ()({title,isComplete})`
+  * Method: `PUT`
   * Parameter: ``
   * Attack: ``
   * Evidence: `Microsoft-IIS/10.0`
@@ -379,15 +386,15 @@ Server leaks information via "X-AspNet-Version"/"X-AspNetMvc-Version" HTTP respo
   * Attack: ``
   * Evidence: `4.0.30319`
   * Other Info: `An attacker can use this information to exploit known vulnerabilities.`
-* URL: http://localhost:5132/debug/error
-  * Node Name: `http://localhost:5132/debug/error`
+* URL: http://localhost:5132/openapi/v1.json
+  * Node Name: `http://localhost:5132/openapi/v1.json`
   * Method: `GET`
   * Parameter: ``
   * Attack: ``
   * Evidence: `4.0.30319`
   * Other Info: `An attacker can use this information to exploit known vulnerabilities.`
-* URL: http://localhost:5132/todos
-  * Node Name: `http://localhost:5132/todos`
+* URL: http://localhost:5132/search%3Fq=q
+  * Node Name: `http://localhost:5132/search (q)`
   * Method: `GET`
   * Parameter: ``
   * Attack: ``
@@ -439,8 +446,8 @@ Configure the server so it will not return those headers.
 
 The Anti-MIME-Sniffing header X-Content-Type-Options was not set to 'nosniff'. This allows older versions of Internet Explorer and Chrome to perform MIME-sniffing on the response body, potentially causing the response body to be interpreted and displayed as a content type other than the declared content type. Current (early 2014) and legacy versions of Firefox will use the declared content type (if one is set), rather than performing MIME-sniffing.
 
-* URL: http://localhost:5132/
-  * Node Name: `http://localhost:5132/`
+* URL: http://localhost:5132
+  * Node Name: `http://localhost:5132`
   * Method: `GET`
   * Parameter: `x-content-type-options`
   * Attack: ``

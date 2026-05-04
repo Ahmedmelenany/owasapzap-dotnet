@@ -83,6 +83,22 @@ jobs:
   - ruleId: 10049
     newRisk: 'Info'
     context: todo-api
+  # Promote critical info-disclosure findings to HIGH so the PR build fails loudly.
+  - ruleId: 10023   # Information Disclosure - Debug Error Messages
+    newRisk: 'High'
+    context: todo-api
+    url: 'http://localhost:5132.*'
+    urlRegex: true
+  - ruleId: 10024   # Sensitive Information in URL
+    newRisk: 'High'
+    context: todo-api
+    url: 'http://localhost:5132.*'
+    urlRegex: true
+  - ruleId: 90022   # Application Error Disclosure
+    newRisk: 'High'
+    context: todo-api
+    url: 'http://localhost:5132.*'
+    urlRegex: true
 
 - type: outputSummary
   parameters:

@@ -104,6 +104,58 @@ jobs:
   - ruleId: 10049
     newRisk: 'Info'
     context: todo-api
+  # Promote XSS findings to HIGH severity.
+  - ruleId: 40012   # Cross Site Scripting (Reflected)
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 40014   # Cross Site Scripting (Persistent)
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 40016   # Cross Site Scripting (Persistent) - Prime
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 40017   # Cross Site Scripting (Persistent) - Spider
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 40026   # Cross Site Scripting (DOM Based)
+    newRisk: 'High'
+    context: todo-api
+  # Promote SQL Injection findings to HIGH severity.
+  - ruleId: 40018   # SQL Injection
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 40019   # SQL Injection - MySQL
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 40020   # SQL Injection - Hypersonic SQL
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 40021   # SQL Injection - Oracle
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 40022   # SQL Injection - PostgreSQL
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 40027   # SQL Injection - MsSQL
+    newRisk: 'High'
+    context: todo-api
+  # Promote RCE / command injection findings to HIGH severity.
+  - ruleId: 90019   # Server Side Code Injection
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 90020   # Remote OS Command Injection
+    newRisk: 'High'
+    context: todo-api
+  # Promote critical info-disclosure findings to HIGH.
+  - ruleId: 10023   # Information Disclosure - Debug Error Messages
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 10024   # Sensitive Information in URL
+    newRisk: 'High'
+    context: todo-api
+  - ruleId: 90022   # Application Error Disclosure
+    newRisk: 'High'
+    context: todo-api
 
 - type: outputSummary
   parameters:

@@ -1,8 +1,8 @@
 {
 	"@programName": "ZAP",
 	"@version": "2.17.0",
-	"@generated": "Sun, 3 May 2026 14:43:25",
-	"created": "2026-05-03T14:43:25.807202128Z",
+	"@generated": "Mon, 4 May 2026 15:19:46",
+	"created": "2026-05-04T15:19:46.164017155Z",
 	"insights":[
 		{
 			"level": "Low",
@@ -119,7 +119,7 @@
 					"desc": "<p>Content Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page \u2014 covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.</p>",
 					"instances":[ 
 						{
-							"id": "62",
+							"id": "53",
 							"uri": "http://localhost:5132",
 							"nodeName": "http:\/\/localhost:5132",
 							"method": "GET",
@@ -129,7 +129,7 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "59",
+							"id": "64",
 							"uri": "http://localhost:5132/",
 							"nodeName": "http:\/\/localhost:5132\/",
 							"method": "GET",
@@ -139,7 +139,7 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "9",
+							"id": "6",
 							"uri": "http://localhost:5132/search?q=q",
 							"nodeName": "http:\/\/localhost:5132\/search (q)",
 							"method": "GET",
@@ -169,7 +169,7 @@
 					"desc": "<p>The response does not protect against 'ClickJacking' attacks. It should include either Content-Security-Policy with 'frame-ancestors' directive or X-Frame-Options.</p>",
 					"instances":[ 
 						{
-							"id": "45",
+							"id": "38",
 							"uri": "http://localhost:5132",
 							"nodeName": "http:\/\/localhost:5132",
 							"method": "GET",
@@ -179,7 +179,7 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "47",
+							"id": "59",
 							"uri": "http://localhost:5132/",
 							"nodeName": "http:\/\/localhost:5132\/",
 							"method": "GET",
@@ -189,7 +189,7 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "51",
+							"id": "4",
 							"uri": "http://localhost:5132/search?q=q",
 							"nodeName": "http:\/\/localhost:5132\/search (q)",
 							"method": "GET",
@@ -219,7 +219,7 @@
 					"desc": "<p>This page contains an error/warning message that may disclose sensitive information like the location of the file that produced the unhandled exception. This information can be used to launch further attacks against the web application. The alert could be a false positive if the error message is found inside a documentation page.</p>",
 					"instances":[ 
 						{
-							"id": "42",
+							"id": "2",
 							"uri": "http://localhost:5132/debug/error",
 							"nodeName": "http:\/\/localhost:5132\/debug\/error",
 							"method": "GET",
@@ -236,7 +236,7 @@
 					"reference": "",
 					"cweid": "550",
 					"wascid": "13",
-					"sourceid": "62"
+					"sourceid": "11"
 				},
 				{
 					"pluginid": "10023",
@@ -279,7 +279,7 @@
 					"desc": "<p>The web/application server is leaking information via one or more \"X-Powered-By\" HTTP response headers. Access to such information may facilitate attackers identifying other frameworks/components your web application is reliant upon and the vulnerabilities such components may be subject to.</p>",
 					"instances":[ 
 						{
-							"id": "12",
+							"id": "13",
 							"uri": "http://localhost:5132/todos/10",
 							"nodeName": "http:\/\/localhost:5132\/todos\/10",
 							"method": "DELETE",
@@ -289,7 +289,7 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "22",
+							"id": "27",
 							"uri": "http://localhost:5132/debug/error",
 							"nodeName": "http:\/\/localhost:5132\/debug\/error",
 							"method": "GET",
@@ -299,7 +299,7 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "26",
+							"id": "29",
 							"uri": "http://localhost:5132/search?q=q",
 							"nodeName": "http:\/\/localhost:5132\/search (q)",
 							"method": "GET",
@@ -319,7 +319,7 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "14",
+							"id": "22",
 							"uri": "http://localhost:5132/todos/10",
 							"nodeName": "http:\/\/localhost:5132\/todos\/10 ()({title,isComplete})",
 							"method": "PUT",
@@ -349,10 +349,30 @@
 					"desc": "<p>The web/application server is leaking version information via the \"Server\" HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web/application server is subject to.</p>",
 					"instances":[ 
 						{
-							"id": "10",
-							"uri": "http://localhost:5132/todos",
-							"nodeName": "http:\/\/localhost:5132\/todos",
+							"id": "0",
+							"uri": "http://localhost:5132/todos/10",
+							"nodeName": "http:\/\/localhost:5132\/todos\/10",
+							"method": "DELETE",
+							"param": "",
+							"attack": "",
+							"evidence": "Microsoft-IIS/10.0",
+							"otherinfo": ""
+						},
+						{
+							"id": "12",
+							"uri": "http://localhost:5132/debug/error",
+							"nodeName": "http:\/\/localhost:5132\/debug\/error",
 							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "Microsoft-IIS/10.0",
+							"otherinfo": ""
+						},
+						{
+							"id": "7",
+							"uri": "http://localhost:5132/todos",
+							"nodeName": "http:\/\/localhost:5132\/todos ()({title,isComplete})",
+							"method": "POST",
 							"param": "",
 							"attack": "",
 							"evidence": "Microsoft-IIS/10.0",
@@ -361,32 +381,22 @@
 						{
 							"id": "1",
 							"uri": "http://localhost:5132/todos/10",
-							"nodeName": "http:\/\/localhost:5132\/todos\/10",
-							"method": "GET",
-							"param": "",
-							"attack": "",
-							"evidence": "Microsoft-IIS/10.0",
-							"otherinfo": ""
-						},
-						{
-							"id": "11",
-							"uri": "http://localhost:5132/todos",
-							"nodeName": "http:\/\/localhost:5132\/todos ()({title,isComplete})",
-							"method": "POST",
+							"nodeName": "http:\/\/localhost:5132\/todos\/10 ()({title,isComplete})",
+							"method": "PUT",
 							"param": "",
 							"attack": "",
 							"evidence": "Microsoft-IIS/10.0",
 							"otherinfo": ""
 						}
 					],
-					"count": "3",
+					"count": "4",
 					"systemic": true,
 					"solution": "<p>Ensure that your web server, application server, load balancer, etc. is configured to suppress the \"Server\" header or provide generic details.</p>",
 					"otherinfo": "",
 					"reference": "<p>https://httpd.apache.org/docs/current/mod/core.html#servertokens</p><p>https://learn.microsoft.com/en-us/previous-versions/msp-n-p/ff648552(v=pandp.10)</p><p>https://www.troyhunt.com/shhh-dont-let-your-response-headers/</p>",
 					"cweid": "497",
 					"wascid": "13",
-					"sourceid": "4"
+					"sourceid": "9"
 				},
 				{
 					"pluginid": "10061",
@@ -399,7 +409,7 @@
 					"desc": "<p>Server leaks information via \"X-AspNet-Version\"/\"X-AspNetMvc-Version\" HTTP response header field(s).</p>",
 					"instances":[ 
 						{
-							"id": "7",
+							"id": "8",
 							"uri": "http://localhost:5132/todos/10",
 							"nodeName": "http:\/\/localhost:5132\/todos\/10",
 							"method": "DELETE",
@@ -409,9 +419,9 @@
 							"otherinfo": "An attacker can use this information to exploit known vulnerabilities."
 						},
 						{
-							"id": "18",
-							"uri": "http://localhost:5132/debug/error",
-							"nodeName": "http:\/\/localhost:5132\/debug\/error",
+							"id": "19",
+							"uri": "http://localhost:5132/openapi/v1.json",
+							"nodeName": "http:\/\/localhost:5132\/openapi\/v1.json",
 							"method": "GET",
 							"param": "",
 							"attack": "",
@@ -419,9 +429,9 @@
 							"otherinfo": "An attacker can use this information to exploit known vulnerabilities."
 						},
 						{
-							"id": "17",
-							"uri": "http://localhost:5132/todos",
-							"nodeName": "http:\/\/localhost:5132\/todos",
+							"id": "20",
+							"uri": "http://localhost:5132/search?q=q",
+							"nodeName": "http:\/\/localhost:5132\/search (q)",
 							"method": "GET",
 							"param": "",
 							"attack": "",
@@ -429,7 +439,7 @@
 							"otherinfo": "An attacker can use this information to exploit known vulnerabilities."
 						},
 						{
-							"id": "6",
+							"id": "9",
 							"uri": "http://localhost:5132/todos/10",
 							"nodeName": "http:\/\/localhost:5132\/todos\/10",
 							"method": "GET",
@@ -439,7 +449,7 @@
 							"otherinfo": "An attacker can use this information to exploit known vulnerabilities."
 						},
 						{
-							"id": "8",
+							"id": "10",
 							"uri": "http://localhost:5132/todos/10",
 							"nodeName": "http:\/\/localhost:5132\/todos\/10 ()({title,isComplete})",
 							"method": "PUT",
@@ -469,9 +479,9 @@
 					"desc": "<p>The Anti-MIME-Sniffing header X-Content-Type-Options was not set to 'nosniff'. This allows older versions of Internet Explorer and Chrome to perform MIME-sniffing on the response body, potentially causing the response body to be interpreted and displayed as a content type other than the declared content type. Current (early 2014) and legacy versions of Firefox will use the declared content type (if one is set), rather than performing MIME-sniffing.</p>",
 					"instances":[ 
 						{
-							"id": "73",
-							"uri": "http://localhost:5132/",
-							"nodeName": "http:\/\/localhost:5132\/",
+							"id": "61",
+							"uri": "http://localhost:5132",
+							"nodeName": "http:\/\/localhost:5132",
 							"method": "GET",
 							"param": "x-content-type-options",
 							"attack": "",
@@ -479,7 +489,7 @@
 							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
 						},
 						{
-							"id": "30",
+							"id": "21",
 							"uri": "http://localhost:5132/openapi/v1.json",
 							"nodeName": "http:\/\/localhost:5132\/openapi\/v1.json",
 							"method": "GET",
@@ -489,7 +499,7 @@
 							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
 						},
 						{
-							"id": "25",
+							"id": "24",
 							"uri": "http://localhost:5132/search?q=q",
 							"nodeName": "http:\/\/localhost:5132\/search (q)",
 							"method": "GET",
@@ -499,7 +509,7 @@
 							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
 						},
 						{
-							"id": "19",
+							"id": "26",
 							"uri": "http://localhost:5132/todos",
 							"nodeName": "http:\/\/localhost:5132\/todos",
 							"method": "GET",
@@ -509,7 +519,7 @@
 							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
 						},
 						{
-							"id": "23",
+							"id": "28",
 							"uri": "http://localhost:5132/todos",
 							"nodeName": "http:\/\/localhost:5132\/todos ()({title,isComplete})",
 							"method": "POST",
@@ -526,7 +536,7 @@
 					"reference": "<p>https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/gg622941(v=vs.85)</p><p>https://owasp.org/www-community/Security_Headers</p>",
 					"cweid": "693",
 					"wascid": "15",
-					"sourceid": "45"
+					"sourceid": "19"
 				},
 				{
 					"pluginid": "10111",
@@ -569,7 +579,7 @@
 					"desc": "<p>The request appeared to contain sensitive information leaked in the URL. This can violate PCI and most organizational compliance policies. You can configure the list of strings for this check to add or remove values specific to your environment.</p>",
 					"instances":[ 
 						{
-							"id": "34",
+							"id": "36",
 							"uri": "http://localhost:5132/export?token=token",
 							"nodeName": "http:\/\/localhost:5132\/export (token)",
 							"method": "GET",
@@ -599,7 +609,7 @@
 					"desc": "<p>The application appears to be a modern web application. If you need to explore it automatically then the Ajax Spider may well be more effective than the standard one.</p>",
 					"instances":[ 
 						{
-							"id": "82",
+							"id": "57",
 							"uri": "http://localhost:5132",
 							"nodeName": "http:\/\/localhost:5132",
 							"method": "GET",
@@ -609,7 +619,7 @@
 							"otherinfo": "No links have been found while there are scripts, which is an indication that this is a modern web application."
 						},
 						{
-							"id": "63",
+							"id": "68",
 							"uri": "http://localhost:5132/",
 							"nodeName": "http:\/\/localhost:5132\/",
 							"method": "GET",
@@ -626,7 +636,7 @@
 					"reference": "",
 					"cweid": "-1",
 					"wascid": "-1",
-					"sourceid": "86"
+					"sourceid": "19"
 				}
 			]
 		}
